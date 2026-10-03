@@ -38,6 +38,9 @@ select{width:100%;background:var(--card);color:var(--txt);border:1px solid var(-
 .prog .cur{color:var(--dim);font-size:11px;word-break:break-all;line-height:1.4;margin-top:2px}
 .found{background:#0f1f08;border:2px solid #4a8020;color:#8fdd40;padding:14px;font-size:16px;font-weight:bold;text-align:center;border-radius:4px;margin-top:8px;word-break:break-all;line-height:1.6}
 .cracking{color:var(--gold);padding:8px;font-size:13px}
+.preview{background:#060610;border:1px solid var(--border);padding:8px;margin:2px 0 4px;font-size:11px;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;display:none;line-height:1.5}
+.vbtn{color:var(--dim);font-size:13px;padding:2px 5px;cursor:pointer;white-space:nowrap;user-select:none}
+.vbtn:hover{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -157,17 +160,49 @@ function lf(){
       grp[folder].forEach(function(f){
         var name=f.p.split('/').pop();
         var dlUrl='/dl?f='+encodeURIComponent(f.p);
+        var vid='pv_'+Math.random().toString(36).slice(2);
         h+='<div class="fi">'
           +'<span class="fn">'+name+'</span>'
           +'<span class="fs">'+fmt(f.s)+'</span>'
+          +'<span class="vbtn" onclick="vf(\''+encodeURIComponent(f.p)+'\',\''+vid+'\')" title="View">&#128065;</span>'
           +'<a class="dl" href="'+dlUrl+'" download="'+name+'" title="Download">&#8615;</a>'
-          +'</div>';
+          +'</div>'
+          +'<div class="preview" id="'+vid+'"></div>';
       });
     });
     el.innerHTML=h;
   }).catch(function(){
     el.innerHTML='<p class="err">Could not load file list.<br>Check SD card is inserted.</p>';
   });
+}
+
+// ---- File preview ----
+function vf(encPath, vid){
+  var el=document.getElementById(vid);
+  if(!el) return;
+  if(el.style.display==='block'){el.style.display='none';return;}
+  el.textContent='Loading...';
+  el.style.display='block';
+  var url='/dl?f='+encPath;
+  fetch(url,{headers:{'Range':'bytes=0-2047'}}).then(function(r){return r.arrayBuffer();}).then(function(buf){
+    var arr=new Uint8Array(buf);
+    // Check if likely text: <5% non-printable non-whitespace bytes
+    var bad=0;
+    for(var i=0;i<arr.length;i++){var c=arr[i];if(c<9||(c>13&&c<32)||c===127) bad++;}
+    var trunc=buf.byteLength>=2048?' [first 2KB shown]':'';
+    if(bad/arr.length<0.05){
+      el.textContent=new TextDecoder('utf-8',{fatal:false}).decode(arr)+trunc;
+    } else {
+      var h='';
+      for(var i=0;i<arr.length;i+=16){
+        var row=arr.slice(i,i+16);
+        var hex=Array.from(row,function(b){return('0'+b.toString(16)).slice(-2)}).join(' ');
+        var asc=Array.from(row,function(b){return b>=32&&b<127?String.fromCharCode(b):'.'}).join('');
+        h+=('000'+i.toString(16)).slice(-4)+': '+hex.padEnd(48)+' |'+asc+'|\n';
+      }
+      el.textContent=h+trunc;
+    }
+  }).catch(function(e){el.textContent='Error: '+e.message;});
 }
 
 // ---- Decode tab ----
@@ -206,19 +241,26 @@ function cp(){
 
 // ---- Crack tab ----
 function lcap(){
+  var demo='<option value="__demo__">&#128273; Demo capture (Andraste-Demo, built-in)</option>';
   fetch('/files').then(function(r){return r.json();}).then(function(d){
     var caps=(d.files||[]).filter(function(f){return f.p.endsWith('.22000');});
     var sel=document.getElementById('capSel');
     if(!caps.length){
-      sel.innerHTML='<option value="">-- no .22000 files found on SD --</option>';
+      sel.innerHTML=demo+'<option value="" disabled>-- no .22000 files on SD --</option>';
       return;
     }
-    sel.innerHTML=caps.map(function(f){
+    sel.innerHTML=demo+caps.map(function(f){
       var name=f.p.split('/').pop();
       return '<option value="'+f.p+'">'+name+' ('+fmt(f.s)+')</option>';
     }).join('');
-  }).catch(function(){});
+  }).catch(function(){
+    var sel=document.getElementById('capSel');
+    sel.innerHTML=demo;
+  });
 }
+
+var DEMO_WORDS='password123\nletmein\nqwerty123\nAdmin1234\nMyWifiPass\nHomeNetwork99\nSuperSecret!\nPasswordCracked!!ItWorked!!!FindYourOwn.220000File!!!\nwelcome2024\nchangeme!\n';
+var DEMO_22000='WPA*01*74340385f9880d8f6d8008f424f49693*aabbcc112233*ddeeff445566*416e6472617374652d44656d6f***\n';
 
 function wlChange(){
   var src=document.getElementById('wlSrc').value;
@@ -252,10 +294,16 @@ async function startCrack(){
   var capPath=document.getElementById('capSel').value;
   if(!capPath){alert('Select a .22000 capture first.');return;}
 
-  var resp;
-  try{resp=await fetch('/dl?f='+encodeURIComponent(capPath));}
-  catch(e){document.getElementById('crackResult').innerHTML='<div class="err">Could not fetch capture: '+esc(e.message)+'</div>';return;}
-  var text=await resp.text();
+  var text;
+  var isDemo=(capPath==='__demo__');
+  if(isDemo){
+    text=DEMO_22000;
+  } else {
+    var resp;
+    try{resp=await fetch('/dl?f='+encodeURIComponent(capPath));}
+    catch(e){document.getElementById('crackResult').innerHTML='<div class="err">Could not fetch capture: '+esc(e.message)+'</div>';return;}
+    text=await resp.text();
+  }
   var records=parseHC22000(text);
   if(!records.length){document.getElementById('crackResult').innerHTML='<div class="err">No valid WPA records in capture file.</div>';return;}
 
@@ -268,7 +316,9 @@ async function startCrack(){
 
   var wlSrc=document.getElementById('wlSrc').value;
   var wlUrl=null, wlData=null;
-  if(wlSrc==='sd'){
+  if(isDemo){
+    wlData=DEMO_WORDS;
+  } else if(wlSrc==='sd'){
     wlUrl='/dl?f='+encodeURIComponent('/andraste/loot/rockyou.txt');
   } else if(wlSrc==='sdpath'){
     var p=document.getElementById('wlPath').value.trim();
