@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Andraste WebChef</title>
+<style>
+:root{--bg:#0a0a0f;--card:#12121c;--border:#2a2a3a;--gold:#c8a843;--txt:#d0d0e0;--dim:#5a5a6a;--red:#c04040}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:monospace;font-size:14px;min-height:100vh}
+h1{color:var(--gold);font-size:1em;padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.tabs{display:flex;border-bottom:1px solid var(--border)}
+.tab{flex:1;padding:9px;text-align:center;cursor:pointer;color:var(--dim);font-size:13px}
+.tab.on{color:var(--gold);border-bottom:2px solid var(--gold);margin-bottom:-1px}
+.pnl{display:none;padding:12px}
+.pnl.on{display:block}
+textarea{width:100%;height:110px;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:8px;font-family:monospace;font-size:12px;resize:vertical;outline:none}
+.btns{margin:6px 0}
+.btn{display:inline-block;padding:6px 10px;margin:3px 2px;background:var(--card);color:var(--gold);border:1px solid var(--border);cursor:pointer;font-size:12px;border-radius:3px;user-select:none}
+.btn:active,.btn:hover{border-color:var(--gold);background:#1c1c2c}
+#out{background:var(--card);border:1px solid var(--border);padding:8px;min-height:70px;white-space:pre-wrap;word-break:break-all;font-size:12px;margin-top:6px;max-height:260px;overflow-y:auto}
+.lbl{color:var(--dim);font-size:11px;margin:8px 0 4px}
+.fi{padding:8px 4px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.fn{flex:1;font-size:12px;word-break:break-all}
+.fs{color:var(--dim);font-size:11px;white-space:nowrap}
+a.dl{color:var(--gold);font-size:16px;white-space:nowrap;text-decoration:none;padding:2px 6px}
+a.dl:hover{color:#fff}
+.fld{color:var(--gold);font-size:11px;padding:6px 4px 2px;font-weight:bold;border-top:1px solid var(--border);margin-top:4px}
+.fld:first-child{border-top:none;margin-top:0}
+.err{color:var(--red);padding:8px;font-size:13px}
+.note{color:var(--dim);font-size:11px;padding:4px 0}
+</style>
+</head>
+<body>
+<h1>&#9876; Andraste WebChef</h1>
+<div class="tabs">
+  <div class="tab on" id="t0" onclick="sw(0)">&#128190; Files</div>
+  <div class="tab" id="t1" onclick="sw(1)">&#128296; Decode</div>
+</div>
+<div class="pnl on" id="p0">
+  <p class="note" style="padding:4px 0 8px">Files on the SD card &mdash; tap &#8615; to download to your phone.</p>
+  <div id="fl"><p style="color:var(--dim);padding:8px">Loading files...</p></div>
+</div>
+<div class="pnl" id="p1">
+  <div class="lbl">Input &mdash; paste text, base64, or hex</div>
+  <textarea id="inp" placeholder="Paste data here..."></textarea>
+  <div class="btns">
+    <div class="btn" onclick="op('b64d')">Base64 Decode</div>
+    <div class="btn" onclick="op('b64e')">Base64 Encode</div>
+    <div class="btn" onclick="op('hex')">Hex &rarr; Text</div>
+    <div class="btn" onclick="op('t2h')">Text &rarr; Hex</div>
+    <div class="btn" onclick="op('url')">URL Decode</div>
+    <div class="btn" onclick="op('r13')">ROT13</div>
+  </div>
+  <div class="lbl">Output <span id="ol" style="font-size:10px;color:var(--dim)"></span>
+    <div class="btn" onclick="cp()" style="display:inline-block;padding:2px 8px;margin-left:6px">Copy</div>
+  </div>
+  <div id="out"></div>
+</div>
+<script>
+function sw(n){
+  [0,1].forEach(function(i){
+    document.getElementById('t'+i).className='tab'+(n===i?' on':'');
+    document.getElementById('p'+i).className='pnl'+(n===i?' on':'');
+  });
+  if(n===0)lf();
+}
+
+function fmt(n){
+  return n<1024?n+'B':n<1048576?Math.round(n/1024)+'K':(n/1048576).toFixed(1)+'M';
+}
+
+function lf(){
+  var el=document.getElementById('fl');
+  el.innerHTML='<p style="color:var(--dim);padding:8px">Loading...</p>';
+  fetch('/files').then(function(r){return r.json();}).then(function(d){
+    if(!d.files||!d.files.length){el.innerHTML='<p class="err">No files found on SD card.</p>';return;}
+    var grp={};
+    d.files.forEach(function(f){
+      var parts=f.p.split('/');
+      var folder=parts.slice(0,parts.length-1).join('/');
+      if(!grp[folder])grp[folder]=[];
+      grp[folder].push(f);
+    });
+    var h='';
+    if(d.truncated)h='<p class="note">Showing first '+d.files.length+' files.</p>';
+    Object.keys(grp).sort().forEach(function(folder){
+      h+='<div class="fld">'+folder.replace('/andraste/','')+'</div>';
+      grp[folder].forEach(function(f){
+        var name=f.p.split('/').pop();
+        var dlUrl='/dl?f='+encodeURIComponent(f.p);
+        h+='<div class="fi">'
+          +'<span class="fn">'+name+'</span>'
+          +'<span class="fs">'+fmt(f.s)+'</span>'
+          +'<a class="dl" href="'+dlUrl+'" download="'+name+'" title="Download">&#8615;</a>'
+          +'</div>';
+      });
+    });
+    el.innerHTML=h;
+  }).catch(function(){
+    el.innerHTML='<p class="err">Could not load file list.<br>Check SD card is inserted.</p>';
+  });
+}
+
+function op(t){
+  var v=document.getElementById('inp').value, r='';
+  try{
+    if(t==='b64d'){
+      r=decodeURIComponent(Array.prototype.map.call(atob(v.replace(/\s/g,'')),function(c){
+        return '%'+('00'+c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+    }
+    else if(t==='b64e'){r=btoa(unescape(encodeURIComponent(v)));}
+    else if(t==='hex'){
+      var h=v.replace(/[^0-9a-fA-F]/g,'');
+      for(var i=0;i<h.length;i+=2)r+=String.fromCharCode(parseInt(h.substr(i,2),16));
+    }
+    else if(t==='t2h'){
+      for(var i=0;i<v.length;i++)r+=('0'+v.charCodeAt(i).toString(16)).slice(-2)+' ';
+      r=r.trim();
+    }
+    else if(t==='url'){r=decodeURIComponent(v.replace(/\+/g,' '));}
+    else if(t==='r13'){r=v.replace(/[A-Za-z]/g,function(c){var b=c<='Z'?65:97;return String.fromCharCode(((c.charCodeAt(0)-b+13)%26)+b);});}
+  }catch(e){r='Error: '+e.message;}
+  document.getElementById('out').textContent=r;
+  document.getElementById('ol').textContent='('+r.length+' chars)';
+}
+
+function cp(){
+  try{navigator.clipboard.writeText(document.getElementById('out').textContent);}
+  catch(e){/* fallback: select text */
+    var sel=window.getSelection();
+    var rng=document.createRange();
+    rng.selectNodeContents(document.getElementById('out'));
+    sel.removeAllRanges();sel.addRange(rng);
+  }
+}
+
+lf();
+</script>
+</body>
+</html>
