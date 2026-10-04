@@ -246,7 +246,7 @@ function cp(){
 
 // ---- Crack tab ----
 function lcap(){
-  var demo='<option value="__demo__">&#128273; Demo capture (Andraste-Demo, built-in)</option>';
+  var demo='<option value="__demo__">&#128273; Demo WPA Handshake Capture (built-in demo test file)</option>';
   fetch('/files').then(function(r){return r.json();}).then(function(d){
     var caps=(d.files||[]).filter(function(f){return f.p.endsWith('.22000');});
     var sel=document.getElementById('capSel');
@@ -264,7 +264,41 @@ function lcap(){
   });
 }
 
-var DEMO_WORDS='password123\nletmein\nqwerty123\nAdmin1234\nMyWifiPass\nHomeNetwork99\nSuperSecret!\nPasswordCracked!!ItWorked!!!FindYourOwn.220000File!!!\nwelcome2024\nchangeme!\n';
+// Realistic top-WiFi weak passwords. The real cracked password is NOT in this list — it's
+// inserted at a random position (20..170) each run so the demo actually works for a few seconds
+// instead of finishing in 250ms and feeling fake. Real PBKDF2 crypto on each attempt.
+var DEMO_WORDS_BASE=['password','123456','12345678','qwerty','abc123','monkey','1234567','letmein','trustno1','dragon',
+'baseball','111111','iloveyou','master','sunshine','ashley','bailey','passw0rd','shadow','123123',
+'654321','superman','qazwsx','michael','football','123qwe','mustang','michelle','jesus','jennifer',
+'password1','password123','welcome','admin','1q2w3e4r','welcome1','admin123','root','toor','changeme',
+'linkedin','starwars','test','guest','matrix','windows','chocolate','pokemon','pepper','cheese',
+'computer','whatever','freedom','hello','merlin','maggie','jordan','liverpool','nascar','mountain',
+'tigger','ranger','harley','fuckyou','buster','soccer','hockey','killer','george','andrew',
+'charlie','andrea','martin','fender','robert','daniel','golfer','rachel','maria','yellow',
+'thomas','jessica','joshua','pepsi','orange','purple','red123','blue123','green123','black123',
+'summer','winter','spring2024','autumn2024','holiday','vacation','family','peanut','butter','cookie',
+'ninja','1qaz2wsx','asdfghjkl','zxcvbnm','0000','00000000','99999999','11223344','55555555','321654',
+'areyoukidding','secretpass','mysecret','topsecret','classified','diamond','platinum','golden','silver','bronze',
+'london','paris','tokyo','berlin','moscow','madrid','sydney','dubai','rome','barcelona',
+'arsenal','chelsea','manchester','realmadrid','juventus','barcafc','rangers','celtic','everton','newcastle',
+'MyWifi','MyWifi2024','HomeWifi','HomeWifi123','GuestWifi','OpenWifi','FreeWifi','VirginMedia','SkyRouter','BTHub',
+'router','modem','gateway','network','internet','connection','wireless','bluetooth','ethernet','5ghz',
+'hunter2','blink182','soccer10','letmein1','lovelove','secretcode','backdoor','frontdoor','sidewindow','trapdoor',
+'minecraft','fortnite','roblox','playstation','xbox','nintendo','steam','discord','twitter','instagram',
+'spotify','netflix','disney','hbomax','amazon','prime','google','facebook','apple','microsoft',
+'kittycat','puppy','rabbit','hamster','parrot','goldfish','dolphin','elephant','giraffe','panda',
+'rainbow','unicorn','butterfly','dragonfly','spider','scorpion','phoenix','griffin','mermaid','vampire'];
+
+function demoWords(){
+  // Shuffle the base list (Fisher-Yates), then splice the real answer into a random slot 20..170.
+  var w=DEMO_WORDS_BASE.slice();
+  for(var i=w.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=w[i];w[i]=w[j];w[j]=tmp;}
+  var target='PasswordCracked!!ItWorked!!!FindYourOwn.220000File!!!';
+  var insertAt=20+Math.floor(Math.random()*Math.min(150,w.length-20));
+  w.splice(insertAt,0,target);
+  return w.join('\n')+'\n';
+}
+
 var DEMO_22000='WPA*01*74340385f9880d8f6d8008f424f49693*aabbcc112233*ddeeff445566*416e6472617374652d44656d6f***\n';
 
 function wlChange(){
@@ -322,7 +356,7 @@ async function startCrack(){
   var wlSrc=document.getElementById('wlSrc').value;
   var wlUrl=null, wlData=null;
   if(isDemo){
-    wlData=DEMO_WORDS;
+    wlData=demoWords();  // fresh shuffle + random target position each run
   } else if(wlSrc==='sd'){
     wlUrl='/dl?f='+encodeURIComponent('/andraste/loot/rockyou.txt');
   } else if(wlSrc==='sdpath'){
@@ -474,7 +508,10 @@ async function tryBatch(pws){
         return;
       }
     }
-    if(tried%200===0){
+    // Progress emit: every attempt for the first 200 (so the demo and small lists SHOW animation),
+    // then every 200 for big wordlists (keeps rockyou-sized crawls from flooding postMessage).
+    var emitEvery=tried<200?1:200;
+    if(tried%emitEvery===0){
       var elapsed=(Date.now()-startMs)/1000||1;
       var spd=Math.round(tried/elapsed);
       var etaSec=spd>0?Math.round((14000000*(doMutate?7:1)-tried)/spd):0;
