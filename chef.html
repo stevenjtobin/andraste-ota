@@ -46,14 +46,14 @@ select{width:100%;background:var(--card);color:var(--txt);border:1px solid var(-
 <body>
 <h1>&#9876; Andraste WebSmith</h1>
 <div class="tabs">
-  <div class="tab on" id="t0" onclick="sw(0)" title="Scrolls — browse, preview and download files from the SD card (what used to be 'Files')">&#128220; Scrolls</div>
-  <div class="tab" id="t1" onclick="sw(1)" title="Oracle — decode pasted data (base64, hex, URL and more). What used to be 'Decode'">&#128302; Oracle</div>
-  <div class="tab" id="t2" onclick="sw(2)" title="Battering Ram — crack WPA handshake captures with a wordlist. What used to be 'Crack'">&#128737; Battering Ram</div>
+  <div class="tab on" id="t0" onclick="sw(0)" data-tip="Scrolls — browse, preview and download files from the SD card">&#128220; Scrolls</div>
+  <div class="tab" id="t1" onclick="sw(1)" data-tip="Oracle — decode pasted data (base64, hex, URL and more)">&#128302; Oracle</div>
+  <div class="tab" id="t2" onclick="sw(2)" data-tip="Battering Ram — crack WPA handshake captures with a wordlist">&#128737; Battering Ram</div>
 </div>
 <style>
-  /* Tooltip helper so the title= attribute also pops as a nicer caption on long-press / tap-hold on mobile. */
+  /* Gold-on-dark tooltip only — no title= attribute so the browser's default yellow popup never shows. */
   .tab{position:relative}
-  .tab:hover::after,.tab:focus::after{content:attr(title);position:absolute;left:50%;transform:translateX(-50%);top:100%;margin-top:4px;background:#06060a;color:var(--gold);border:1px solid var(--border);padding:4px 8px;font-size:11px;white-space:normal;max-width:220px;min-width:140px;line-height:1.3;border-radius:3px;z-index:30;pointer-events:none;text-align:left}
+  .tab:hover::after,.tab:focus::after{content:attr(data-tip);position:absolute;left:50%;transform:translateX(-50%);top:100%;margin-top:4px;background:#06060a;color:var(--gold);border:1px solid var(--border);padding:4px 8px;font-size:11px;white-space:normal;max-width:220px;min-width:140px;line-height:1.3;border-radius:3px;z-index:30;pointer-events:none;text-align:left}
 </style>
 
 <!-- Files -->
