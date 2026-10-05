@@ -410,7 +410,13 @@ progress::-moz-progress-bar{background:#b64139}
     // Fallback caption driver when audio is not keeping time.
     if (!audioOk) setCaptionByTime(elapsed);
 
-    if (elapsed >= duration && !endedByAudio) {
+    // Codex finding 2026-10-05 07:51 UTC: the elapsed-timer must NEVER redirect while
+    // audio is working. On the audio-success path, redirect is only fired by the
+    // 'ended' event handler. The timer below is a pure fallback for when audio
+    // never starts (preload=none promise rejects, 404, autoplay blocked). We also
+    // give a 3-second grace period after Begin so the autoplay promise has time to
+    // resolve before the fallback kicks in.
+    if (!endedByAudio && !audioOk && elapsed >= 3 && elapsed >= duration) {
       end("The game begins. Make your choice.");
       window.location.assign(destination);
     }
