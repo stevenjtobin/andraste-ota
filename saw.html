@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Andraste · SAW Portal</title>
+<style>
+:root {
+  --red:#a31320;
+  --light:#e5d8ce;
+  --muted:#aa9b94;
+  --bg:#080708;
+}
+* { box-sizing:border-box }
+html,body { margin:0; min-height:100%; background:var(--bg) }
+body {
+  color:var(--light);
+  font:14px/1.5 Georgia,serif;
+  text-align:center;
+  overflow-x:hidden;
+}
+main {
+  position:relative;
+  max-width:420px;
+  margin:auto;
+  padding:18px 14px 30px;
+  isolation:isolate;
+}
+.brand {
+  color:var(--muted);
+  font:10px monospace;
+  letter-spacing:.24em;
+}
+h1 { margin:10px 0 16px; font-size:clamp(25px,8vw,38px) }
+p { margin:12px 0 }
+.blood {
+  position:relative;
+  width:fit-content;
+  max-width:100%;
+  margin-left:auto;
+  margin-right:auto;
+  color:#d64149;
+  text-shadow:1px 1px #390006,0 2px 3px #73000d;
+}
+.blood::after {
+  content:"";
+  position:absolute;
+  left:7%; right:5%; top:90%;
+  height:18px;
+  pointer-events:none;
+  opacity:.6;
+  transform-origin:top;
+  background:
+    linear-gradient(var(--red),transparent) 8% 0/2px 75%,
+    linear-gradient(var(--red),transparent) 35% 0/3px 100%,
+    linear-gradient(var(--red),transparent) 69% 0/2px 60%,
+    linear-gradient(var(--red),transparent) 91% 0/3px 85%;
+  background-repeat:no-repeat;
+  animation:drip 7s ease-in-out infinite;
+  animation-play-state:paused;
+}
+.stage {
+  position:relative;
+  width:100%;
+  aspect-ratio:4/3;
+  overflow:hidden;
+  border:1px solid #352327;
+  background:
+    radial-gradient(ellipse at 50% 24%,#262120 0,transparent 48%),
+    #030303;
+}
+.door {
+  position:absolute;
+  inset:14% 31% 12%;
+  border:3px solid #302a2a;
+  background:#000;
+  box-shadow:0 0 22px #000;
+}
+.hero {
+  position:absolute;
+  inset:0;
+  width:100%; height:100%;
+  object-fit:contain;
+  opacity:0;
+  transform:scale(.7);
+}
+.running .hero {
+  animation:approach 10s ease-in-out infinite;
+}
+.lamp {
+  position:absolute;
+  top:-4px; left:calc(50% - 18px);
+  width:36px; height:25px;
+  border-top:14px solid #151313;
+  border-radius:0 0 50% 50%;
+  background:#c2b199;
+  transform-origin:50% -15px;
+  box-shadow:0 14px 32px 10px #e0c39a19;
+  animation:swing 5s ease-in-out infinite,
+            flicker 9s linear infinite;
+  animation-play-state:paused;
+}
+.quote {
+  position:absolute;
+  left:12px; right:12px; bottom:16px;
+  margin:0;
+  color:#e1cec5;
+  font-size:15px;
+  text-shadow:0 2px 4px #000,0 0 8px #000;
+  z-index:2;
+}
+.pool {
+  position:absolute;
+  bottom:-9px; left:10%;
+  width:80%; height:15px;
+  border-radius:50%;
+  background:#660713;
+  box-shadow:0 -2px 10px #970c1930;
+  transform:scaleX(.15);
+  transform-origin:center;
+}
+.running .pool { animation:pool 90s linear forwards }
+.running .blood::after,
+.running .lamp { animation-play-state:running }
+.controls { position:relative; z-index:5; margin-top:20px }
+button {
+  min-height:44px;
+  padding:10px 14px;
+  border:1px solid #a1363c;
+  border-radius:3px;
+  background:#410b12;
+  color:#fff1e6;
+  font:700 14px Georgia,serif;
+  cursor:pointer;
+}
+button:focus-visible { outline:3px solid #f2c89f; outline-offset:3px }
+button:disabled { opacity:.55; cursor:default }
+.secondary { background:#171315; margin-left:6px }
+.notice,.status,.timer {
+  color:var(--muted);
+  font:11px/1.5 monospace;
+}
+.status { min-height:2.8em }
+progress {
+  width:100%; height:5px;
+  accent-color:var(--red);
+}
+.effects {
+  position:fixed;
+  inset:0;
+  z-index:4;
+  pointer-events:none;
+  background:
+    repeating-linear-gradient(
+      transparent 0 3px,#0003 3px 4px),
+    radial-gradient(ellipse at center,transparent 35%,#000a 100%);
+}
+.running .stage {
+  animation:tracking 17s linear infinite;
+}
+@keyframes drip {
+  0%,100% { transform:scaleY(.35); opacity:.3 }
+  70% { transform:scaleY(1); opacity:.65 }
+}
+@keyframes approach {
+  0% { opacity:0; transform:scale(.7) }
+  15% { opacity:.85 }
+  78% { opacity:1; transform:scale(1.08) }
+  100% { opacity:0; transform:scale(1.12) }
+}
+@keyframes swing {
+  0%,100% { transform:rotate(-7deg) }
+  50% { transform:rotate(7deg) }
+}
+@keyframes flicker {
+  0%,58%,61%,100% { opacity:.75 }
+  59%,60% { opacity:.2 }
+}
+@keyframes tracking {
+  0%,94%,96%,100% { transform:translateX(0) }
+  95% { transform:translateX(1px) }
+}
+@keyframes pool {
+  to { transform:scaleX(1) }
+}
+@media (prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation:none!important }
+  .hero { display:none }
+  .door { box-shadow:0 0 20px #62091555 }
+}
+</style>
+</head>
+<body>
+<div class="effects" aria-hidden="true"></div>
+<main id="portal">
+  <div class="brand">ANDRASTE · FREAKY</div>
+  <h1 class="blood">SAW PORTAL</h1>
+
+  <div class="stage">
+    <div class="door" aria-hidden="true"></div>
+    <img id="hero" class="hero"
+         alt="Billy approaches on a red tricycle"
+         width="320" height="240">
+    <div class="lamp" aria-hidden="true"></div>
+    <p id="quote" class="quote">Every connection is a choice.</p>
+    <div class="pool" aria-hidden="true"></div>
+  </div>
+
+  <p class="blood">A familiar name. An unfamiliar network.</p>
+  <p class="blood">Would you still choose to connect?</p>
+
+  <div class="controls">
+    <button id="begin" type="button">Click to begin the game</button>
+    <button id="stop" class="secondary" type="button" hidden>
+      Stop
+    </button>
+  </div>
+
+  <p class="notice">
+    Halloween demo &middot; sound and gentle motion.<br>
+    After 90 active seconds, open the configured local page.
+    Stop cancels the transition.
+  </p>
+  <p id="status" class="status" role="status" aria-live="polite">
+    Nothing starts until you choose.
+  </p>
+  <progress id="progress" max="90" value="0"
+            aria-label="Time until the next local page"></progress>
+  <div id="timer" class="timer">90 seconds</div>
+</main>
+
+<audio id="audio" preload="none" loop playsinline
+       src="/media/saw.mp3"></audio>
+
+<script>
+(function () {
+  "use strict";
+
+  const portal = document.getElementById("portal");
+  const begin = document.getElementById("begin");
+  const stop = document.getElementById("stop");
+  const audio = document.getElementById("audio");
+  const hero = document.getElementById("hero");
+  const status = document.getElementById("status");
+  const timer = document.getElementById("timer");
+  const progress = document.getElementById("progress");
+  const quote = document.getElementById("quote");
+
+  const destination = "/rr-payload";
+  const duration = 90;
+  const quotes = [
+    "Every connection is a choice.",
+    "The strongest signal is not always the safest.",
+    "A familiar name can wear an unfamiliar face.",
+    "Before you trust the door, ask who built it.",
+    "You can leave. That choice is yours."
+  ];
+  const reduceMotion =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let running = false;
+  let elapsed = 0;
+  let previous = 0;
+  let interval = null;
+  let session = 0;
+  let quoteIndex = -1;
+
+  function playAudio() {
+    const currentSession = session;
+    const request = audio.play();
+    if (request && request.catch) {
+      request.catch(function () {
+        if (running && currentSession === session) {
+          status.textContent =
+            "Audio unavailable or blocked. The visual demo continues.";
+        }
+      });
+    }
+  }
+
+  audio.addEventListener("error", function () {
+    if (running) {
+      status.textContent =
+        "Local audio could not load. Check /media/saw.mp3.";
+    }
+  });
+
+  hero.addEventListener("error", function () {
+    hero.style.display = "none";
+    if (running) {
+      status.textContent =
+        "Local animation unavailable. The doorway scene continues.";
+    }
+  });
+
+  function end(message) {
+    running = false;
+    session++;
+    clearInterval(interval);
+    interval = null;
+    audio.pause();
+    try { audio.currentTime = 0; } catch (_) {}
+    portal.classList.remove("running");
+    begin.disabled = false;
+    stop.hidden = true;
+    status.textContent = message;
+  }
+
+  function tick() {
+    if (!running) return;
+    const now = performance.now();
+
+    if (!document.hidden) {
+      elapsed += (now - previous) / 1000;
+    }
+    previous = now;
+
+    const remaining = Math.max(0, Math.ceil(duration - elapsed));
+    progress.value = Math.min(duration, elapsed);
+    timer.textContent = remaining + " seconds";
+
+    const nextQuote = Math.floor(elapsed / 15) % quotes.length;
+    if (nextQuote !== quoteIndex) {
+      quote.textContent = quotes[nextQuote];
+      quoteIndex = nextQuote;
+    }
+
+    if (elapsed >= duration) {
+      end("Opening the next local page…");
+      window.location.assign(destination);
+    }
+  }
+
+  begin.addEventListener("click", function () {
+    if (running) return;
+    session++;
+    elapsed = 0;
+    previous = performance.now();
+    quoteIndex = -1;
+    running = true;
+    begin.disabled = true;
+    stop.hidden = false;
+    progress.value = 0;
+    portal.classList.add("running");
+
+    status.textContent =
+      "Demo running. Stop remains available throughout.";
+
+    if (!reduceMotion && !hero.getAttribute("src")) {
+      hero.src = "/media/jigsaw.gif";
+    }
+    playAudio();
+    interval = setInterval(tick, 250);
+  });
+
+  stop.addEventListener("click", function () {
+    end("Stopped. No automatic transition will occur.");
+    timer.textContent = "Stopped";
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    previous = performance.now();
+    if (!running) return;
+    if (document.hidden) audio.pause();
+    else playAudio();
+  });
+
+  window.addEventListener("pagehide", function () {
+    end("Stopped.");
+  });
+}());
+</script>
+</body>
+</html>
