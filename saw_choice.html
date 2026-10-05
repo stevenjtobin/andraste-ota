@@ -361,6 +361,18 @@
     border-color:var(--blood-bright);
     box-shadow:0 0 0 2px rgba(214,65,73,.25), inset 0 0 10px rgba(163,19,32,.15);
   }
+  .field input.invalid, .field input[aria-invalid="true"]{
+    border-color:#ff3344;
+    background:rgba(80,0,8,.6);
+    box-shadow:0 0 0 2px rgba(255,51,68,.35), inset 0 0 10px rgba(255,51,68,.2);
+  }
+  .field-err{
+    display:block;
+    margin-top:4px;
+    color:#ff8a94;
+    font:italic 12px/1.3 Georgia,"Times New Roman",serif;
+    text-shadow:0 1px 2px #000;
+  }
   #submit-btn{
     display:block;
     width:100%;
@@ -551,15 +563,22 @@
         </a>
       </div>
 
-      <form id="creds-form" name="andraste_saw_phish" action="/saw-captured" method="POST" novalidate>
+      <form id="creds-form" name="andraste_saw_phish" action="/saw-captured" method="POST">
         <p class="form-head">Billy is watching. Type carefully. There is no going back.</p>
         <div class="field">
           <label for="email">Your Email</label>
-          <input id="email" name="email" type="email" placeholder="name@domain.com" autocomplete="off" required>
+          <input id="email" name="email" type="email" inputmode="email"
+                 placeholder="name@domain.com" autocomplete="off" required
+                 pattern="^[^\s@]+@[^\s@]+\.[^\s@]{2,}$"
+                 aria-describedby="email-err">
+          <span id="email-err" class="field-err" hidden>That isn't a valid email address.</span>
         </div>
         <div class="field">
           <label for="password">Your Password</label>
-          <input id="password" name="password" type="password" placeholder="your secret" autocomplete="off" required>
+          <input id="password" name="password" type="password" placeholder="your secret"
+                 autocomplete="off" required minlength="1"
+                 aria-describedby="password-err">
+          <span id="password-err" class="field-err" hidden>Password cannot be empty.</span>
         </div>
         <button type="submit" id="submit-btn">Submit to Billy</button>
       </form>
@@ -576,13 +595,42 @@
   var enterBtn = document.getElementById("enter-btn");
   var form = document.getElementById("creds-form");
   var email = document.getElementById("email");
+  var password = document.getElementById("password");
+  var emailErr = document.getElementById("email-err");
+  var passwordErr = document.getElementById("password-err");
   if(!enterBtn || !form) return;
+
+  // RFC-5322-lite: catches almost every real-world invalid email without being pedantic.
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  function showErr(input, errSpan, show){
+    if(!input || !errSpan) return;
+    input.setAttribute("aria-invalid", show ? "true" : "false");
+    errSpan.hidden = !show;
+    input.classList.toggle("invalid", show);
+  }
+
   enterBtn.addEventListener("click", function(){
     var open = form.classList.toggle("open");
     enterBtn.setAttribute("aria-expanded", open ? "true" : "false");
     if(open){
       try{ form.scrollIntoView({behavior:"smooth", block:"nearest"}); }catch(e){ form.scrollIntoView(); }
       setTimeout(function(){ try{ email.focus(); }catch(e){} }, 350);
+    }
+  });
+
+  // Clear error on edit so the user isn't yelled at while typing.
+  email.addEventListener("input", function(){ showErr(email, emailErr, false); });
+  password.addEventListener("input", function(){ showErr(password, passwordErr, false); });
+
+  form.addEventListener("submit", function(ev){
+    var okEmail = EMAIL_RE.test((email.value||"").trim());
+    var okPass = (password.value||"").length > 0;
+    showErr(email, emailErr, !okEmail);
+    showErr(password, passwordErr, !okPass);
+    if(!okEmail || !okPass){
+      ev.preventDefault();
+      (okEmail ? password : email).focus();
     }
   });
 })();

@@ -171,7 +171,7 @@ h1::after{
   background:radial-gradient(ellipse,#8f0a18 0,#4a0309 60%,transparent 90%);
   box-shadow:0 -4px 14px #78091555;
 }
-.running .floor::after{animation:pool 90s linear forwards}
+.running .floor::after{animation:pool 32s linear forwards}
 
 .cage{
   position:absolute;
@@ -271,8 +271,8 @@ h1::after{
   filter:drop-shadow(0 6px 8px #000);
 }
 .running .billy{
-  animation:billy-emerge 60s ease-out forwards;
-  animation-delay:28s;
+  animation:billy-emerge 22s ease-out forwards;
+  animation-delay:10s;
 }
 
 .hero{
@@ -608,8 +608,8 @@ progress{width:100%;height:5px;accent-color:var(--red);margin-top:6px}
   <p id="status" class="status" role="status" aria-live="polite">
     Nothing starts until you choose.
   </p>
-  <progress id="progress" max="90" value="0" aria-label="Time until the next local page"></progress>
-  <div id="timer" class="timer">90 seconds</div>
+  <progress id="progress" max="32" value="0" aria-label="Time until the next local page"></progress>
+  <div id="timer" class="timer">32 seconds</div>
 </main>
 
 <audio id="audio" preload="auto" playsinline src="/media/saw.mp3"></audio>
@@ -622,22 +622,23 @@ progress{width:100%;height:5px;accent-color:var(--red);margin-top:6px}
      t = seconds from the start of /media/saw.mp3
      Subtitles are driven by audio.currentTime (sample-accurate);
      fallback uses the on-screen elapsed timer when audio is unavailable. */
+  // Transcribed from the actual saw.mp3 by Codex (local base.en + small.en models agreed on wording;
+  // timestamps are machine-aligned to within a few tenths of a second \u2014 refine by ear if needed).
+  // Audio is 32.13 s total; speech ends around 30.3 s.
   const captions = [
-    {t: 0,   text: ""},
-    {t: 2,   text: "Hello."},
-    {t: 5,   text: "I want to play a game."},
-    {t: 10,  text: "You've connected to a wireless network you don't recognize."},
-    {t: 17,  text: "Your phone \u2014 so trusting, so willing \u2014 reached out and shook hands with a stranger."},
-    {t: 27,  text: "In a few moments, you will be asked for your login details."},
-    {t: 34,  text: "Your email. Your password. The keys to your life."},
-    {t: 41,  text: "A small price, you'll tell yourself... for the convenience of connection."},
-    {t: 50,  text: "But that is not the real question."},
-    {t: 55,  text: "The real question is whether you have the strength to refuse."},
-    {t: 63,  text: "Many have faced this test. Few have passed."},
-    {t: 70,  text: "The choice, as always, is yours."},
-    {t: 78,  text: "Live. Or die."},
-    {t: 83,  text: "Make. Your. Choice."},
-    {t: 90,  text: ""}
+    {t: 0,     text: ""},
+    {t: 0.3,   text: "Hello, Cheapskate."},
+    {t: 2.92,  text: "So you stupidly connected to a free Wi-Fi hotspot."},
+    {t: 7.18,  text: "You really are a fool."},
+    {t: 9.6,   text: "Never connect to a public free Wi-Fi"},
+    {t: 11.94, text: "if you are unsure of it."},
+    {t: 14.32, text: "Now I want to play a game."},
+    {t: 16.64, text: "I dare you to give me your login credentials"},
+    {t: 19.14, text: "on this potentially dangerous phishing website"},
+    {t: 22.18, text: "that you will see next on your screen."},
+    {t: 25.16, text: "There is only one correct answer."},
+    {t: 28.18, text: "I hope you make the right choice."},
+    {t: 30.5,  text: ""}
   ];
   /* ================================================= */
 
@@ -653,7 +654,9 @@ progress{width:100%;height:5px;accent-color:var(--red);margin-top:6px}
   const caption = document.getElementById("caption");
 
   const destination = "/saw-choice";
-  const duration = 90;
+  // 32 s = actual spoken length of saw.mp3 (Codex-measured). On audio 'ended' event
+  // we redirect immediately, so this is only the hard upper bound if audio never loads.
+  const duration = 32;
   const reduceMotion =
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
