@@ -403,12 +403,11 @@ progress::-moz-progress-bar{background:#b64139}
     }
     previous = now;
 
-    // Codex finding 2026-10-05 10:36 UTC: when audio is working, display must track
-    // audio.currentTime, not the elapsed wall-clock. Otherwise, with a delayed audio
-    // load, the countdown reads "0 seconds" + progress bar fills while narration is
-    // still playing (we correctly refuse to redirect, but the UI lies). Fallback to
-    // elapsed only when audio is unavailable.
-    const displayT = (audioOk && audio.duration > 0)
+    // Codex findings 10:36 + 10:52 UTC: display tracks audio.currentTime whenever
+    // audio hasn't failed. During metadata loading audio.duration is NaN but
+    // currentTime is a valid 0, which is exactly what we want to show (0 of 32 s).
+    // Elapsed wall-clock is used ONLY when audio has explicitly failed (audioOk=false).
+    const displayT = audioOk
       ? Math.min(audio.currentTime || 0, duration)
       : Math.min(elapsed, duration);
     const remaining = Math.max(0, Math.ceil(duration - displayT));
