@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Andraste · SAW Portal · The room</title>
+<style>
+/* Poster variant: the whole scene is present before interaction. The local
+   animation is an enhancement; every essential visual is inline below. */
+:root{--bone:#e9dfc9;--paper:#b4ada1;--teal:#103536;--rust:#7b3928;
+ --red:#b51c28;--black:#05090a;--muted:#b7b7af;--line:#40504a}
+*{box-sizing:border-box}
+html{background:var(--black);color-scheme:dark}
+body{margin:0;background:radial-gradient(ellipse at 50% 16%,#122629,#05090a 70%);
+ color:var(--bone);font:14px/1.5 Georgia,serif;overflow-x:hidden}
+button{font:inherit}
+[hidden]{display:none!important}
+main{max-width:420px;margin:0 auto;padding:20px 18px 24px;position:relative;
+ isolation:isolate;min-height:100svh}
+main::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+ background:linear-gradient(90deg,#0009,transparent 12% 88%,#0009),
+ repeating-linear-gradient(0deg,transparent 0 4px,#0107081a 4px 5px)}
+.edition{display:flex;justify-content:space-between;gap:10px;align-items:center;
+ color:#b9b9a9;font:9px/1.3 monospace;letter-spacing:.14em;text-transform:uppercase;
+ border-top:1px solid #475249;padding-top:8px}
+.edition b{color:#d9d4bd;font-weight:400}
+.identity{position:relative;margin:14px 0 0;text-align:center}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+ clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.title-art{display:block;width:100%;height:auto;overflow:visible}
+.title-art text{font-family:Impact,"Arial Black",sans-serif;font-weight:900;fill:var(--bone)}
+.chapter{font:700 11px/1 monospace;color:#a2a59a;letter-spacing:.65em;padding-left:.65em;margin:0 0 9px}
+.tagline{color:#e4524d;text-align:center;text-transform:uppercase;letter-spacing:.09em;
+ font:700 10px/1.5 Arial,sans-serif;margin:0 0 16px}
+.stage{position:relative;aspect-ratio:5/4;margin:0 -8px;overflow:hidden;
+ border-top:1px solid #43504a;border-bottom:1px solid #333b37;background:#071012;
+ box-shadow:0 15px 32px #0008}
+.stage::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;
+ background:radial-gradient(ellipse at 51% 38%,transparent 25%,#0005 78%,#000b 100%)}
+.room{position:absolute;inset:0;width:100%;height:100%}
+.hero{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;
+ pointer-events:none;z-index:2}
+.running .hero{opacity:1}
+.specimen{position:absolute;top:12px;left:12px;z-index:4;color:#b0b2a0;
+ font:8px/1.4 monospace;letter-spacing:.12em;opacity:.85}
+.specimen::before{content:"";display:inline-block;width:4px;height:4px;background:#b74c37;
+ margin-right:5px;vertical-align:middle}
+.quote{position:relative;margin:19px 12px 17px;text-align:center;color:#ddd6c6;
+ font:italic 17px/1.35 Georgia,serif;min-height:2.7em;display:grid;place-items:center}
+.quote::before{content:"";display:block;position:absolute;left:calc(50% - 13px);top:-10px;
+ width:26px;height:1px;background:#925340}
+#caption{display:none;color:var(--bone);font:16px/1.5 Georgia,serif;text-align:center;margin:18px 0;min-height:3em}#caption.on{display:block}
+.controls{display:flex;gap:9px;margin-top:2px;position:relative;z-index:6}
+button{border:1px solid #c95644;color:#fff0dc;background:linear-gradient(#7d1a20,#50141a);
+ min-height:48px;padding:12px 16px;cursor:pointer;border-radius:1px;
+ box-shadow:inset 0 1px #ef9e6920,0 3px 10px #0008;font:700 12px/1.3 Arial,sans-serif;
+ text-transform:uppercase;letter-spacing:.07em}
+#begin{flex:1}
+button:hover{border-color:#f1b393;background:#84232b}
+button:active{transform:translateY(1px)}
+button:focus-visible{outline:3px solid #f2dfad;outline-offset:4px}
+button:disabled{opacity:.6;cursor:default}
+.secondary{background:#152024;border-color:#728383;color:#eee5d6;min-width:75px}
+.secondary:hover{background:#223438;border-color:#d5dccc}
+.time-row{display:flex;align-items:center;justify-content:space-between;margin:16px 0 7px;
+ font:9px/1.3 monospace;letter-spacing:.08em;color:#aeb7ae;text-transform:uppercase}
+.timer{color:#e6dec9;font:11px/1.3 monospace;letter-spacing:0}
+progress{appearance:none;-webkit-appearance:none;display:block;width:100%;height:3px;
+ border:0;background:#243130;accent-color:#b64139}
+progress::-webkit-progress-bar{background:#243130}
+progress::-webkit-progress-value{background:#b64139}
+progress::-moz-progress-bar{background:#b64139}
+.status{font:10px/1.5 monospace;color:#c2c5b8;min-height:3em;margin:10px 0 5px}
+.notice{border-top:1px solid #263835;padding-top:11px;margin:0;color:#9faeab;
+ font:10px/1.6 Arial,sans-serif}
+.notice strong{color:#d1d0bd;font-weight:400}
+.footer{display:flex;justify-content:space-between;color:#738781;font:8px/1 monospace;
+ letter-spacing:.1em;margin-top:18px;text-transform:uppercase}
+.lamp-core{opacity:.9}
+.running .lamp-core{animation:lamp-breathe 8s ease-in-out infinite}
+.running .water-drop{animation:fall 6s linear infinite;transform-box:fill-box;transform-origin:center}
+.running .water-drop.delayed{animation-delay:3s}
+@keyframes lamp-breathe{0%,100%{opacity:.85}50%{opacity:1}}
+@keyframes fall{0%,76%{transform:translateY(0);opacity:0}79%{opacity:.65}100%{transform:translateY(145px);opacity:0}}
+@media(max-width:340px){main{padding-inline:14px}.edition{font-size:8px;letter-spacing:.08em}
+ .quote{font-size:15px}.tagline{font-size:9px}.controls{gap:6px}button{padding-inline:10px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;
+ transition:none!important;scroll-behavior:auto!important}.hero{display:none!important}}
+</style>
+</head>
+<body>
+<main id="portal">
+ <div class="edition"><b>ANDRASTE / FREAKY</b><span>A TEST OF TRUST · 01</span></div>
+ <header class="identity">
+  <h1 class="sr-only">SAW PORTAL</h1>
+  <svg class="title-art" viewBox="0 0 384 119" aria-hidden="true">
+   <defs>
+    
+    <filter id="chipped-bone" x="-5%" y="-8%" width="110%" height="120%" color-interpolation-filters="sRGB">
+     <feTurbulence type="fractalNoise" baseFrequency=".13 .55" numOctaves="3" seed="17" result="grain"/>
+     <feColorMatrix in="grain" type="saturate" values="0" result="grey"/>
+     <feComponentTransfer in="grey" result="chips"><feFuncA type="discrete" tableValues="0 0 0 0 0 1 1"/></feComponentTransfer>
+     <feComposite in="SourceGraphic" in2="chips" operator="out" result="worn"/>
+     <feDisplacementMap in="worn" in2="grain" scale="1.4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+   </defs>
+   <text x="192" y="104" font-size="129" text-anchor="middle" textLength="367" lengthAdjust="spacingAndGlyphs" filter="url(#chipped-bone)">SAW</text>
+   <path d="M25 48l29 4m96 41l18-2m64-53l17 2m71 33l-13 3" stroke="#061012" stroke-width="1.5" opacity=".65"/>
+  </svg>
+  <p class="chapter">PORTAL</p>
+  <p class="tagline">A familiar name. An unfamiliar network.</p>
+ </header>
+ <div class="stage" role="group" aria-label="Billy on a red tricycle in a dark tiled room">
+  <svg class="room" viewBox="0 0 400 320" aria-hidden="true">
+   <defs>
+    <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#173c3e"/><stop offset=".65" stop-color="#0e292a"/><stop offset="1" stop-color="#071719"/></linearGradient>
+    <linearGradient id="floor" x2="0" y2="1"><stop stop-color="#081214"/><stop offset=".5" stop-color="#203b38"/><stop offset="1" stop-color="#070e10"/></linearGradient>
+    <linearGradient id="ivory" x1="0" x2="1"><stop stop-color="#5c7770"/><stop offset=".35" stop-color="#ddd8be"/><stop offset=".63" stop-color="#e7e3cc"/><stop offset="1" stop-color="#66817a"/></linearGradient>
+    <linearGradient id="steel" x2="0" y2="1"><stop stop-color="#101b1c"/><stop offset=".45" stop-color="#aeb7a4"/><stop offset=".6" stop-color="#c7c9af"/><stop offset="1" stop-color="#253b3a"/></linearGradient>
+    <linearGradient id="crimson" x2="1" y2=".6"><stop stop-color="#521319"/><stop offset=".4" stop-color="#c33232"/><stop offset=".7" stop-color="#8c1421"/><stop offset="1" stop-color="#330b14"/></linearGradient>
+    <linearGradient id="suit" x2="1" y2="1"><stop stop-color="#293132"/><stop offset=".45" stop-color="#101416"/><stop offset="1" stop-color="#010608"/></linearGradient>
+    <radialGradient id="cone"><stop stop-color="#d9cc84" stop-opacity=".26"/><stop offset="1" stop-color="#d9cc84" stop-opacity="0"/></radialGradient>
+    <radialGradient id="grime"><stop stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".85"/></radialGradient>
+    <pattern id="tile" width="47" height="33" patternUnits="userSpaceOnUse">
+     <path d="M0 0H47V33H0Z" fill="none" stroke="#031214" stroke-width="2"/>
+     <path d="M2 31V2H45" fill="none" stroke="#729086" stroke-opacity=".15"/>
+     <path d="M8 5h19m-6 20h16" stroke="#acc4ad" stroke-opacity=".035"/>
+    </pattern>
+    <pattern id="chain" width="16" height="31" patternUnits="userSpaceOnUse">
+     <ellipse cx="8" cy="8" rx="5" ry="9" fill="none" stroke="#596260" stroke-width="2.7"/>
+     <ellipse cx="8" cy="23" rx="2" ry="9" fill="#0b1416" stroke="#303c3b" stroke-width="2"/>
+     <path d="M5 2Q2 8 5 13" stroke="#a98b65" stroke-width=".7" fill="none"/>
+    </pattern>
+    <filter id="shadow"><feGaussianBlur stdDeviation="5"/></filter>
+    <filter id="wet"><feGaussianBlur stdDeviation="1.3"/></filter>
+   </defs>
+   
+   <path d="M0 0H400V225H0Z" fill="url(#wall)"/>
+   <path d="M0 0H400V225H0Z" fill="url(#tile)"/>
+   <path d="M126 41H273V222H126Z" fill="#021013" stroke="#384b40" stroke-width="4"/>
+   <path d="M133 48H266V222H133Z" fill="#010608"/>
+   <path d="M132 46V218M270 42V220" stroke="#70452e" stroke-opacity=".6" stroke-width="2"/>
+   <path d="M0 225L126 209H272L400 225V320H0Z" fill="url(#floor)"/>
+   
+   <g stroke="#769080" stroke-opacity=".16" fill="none">
+    <path d="M0 251L151 216M0 291L170 216M84 320L185 216M290 320L224 216M400 281L245 216M0 275H400M0 310H400"/>
+    <path d="M21 249l12 8-6 7 17 8m281-15l14 2 13-7 14 9m-302 39l19 3 14-8"/>
+   </g>
+   <g fill="none" stroke-linecap="round">
+    <path d="M35 36l-4 50 5 61-2 52M92 1l4 64-6 67 5 79M305 20l3 57-5 45 4 79M355 0l-5 77 4 95" stroke="#061517" stroke-width="5" opacity=".6"/>
+    <path d="M36 64l-2 38m62 23l-2 33m212-80l-2 23m48 34v24" stroke="#52695b" stroke-width="1" opacity=".35"/>
+    <path d="M47 99l13 11-5 12 17 15m-58 35l24-8 9 13 14-7m221-60l12 14-8 10 10 5m-259-10l6-12-1-12m62 72l-9 10 10 7" stroke="#020a0c" stroke-width="2"/>
+   </g>
+   <g opacity=".24" fill="#95643f">
+    <path d="M2 64h14v7H8v28H3ZM313 130h8v12h-5v30h-3ZM73 1h4v30h-4ZM112 199h7v19h-7Z"/>
+   </g>
+   <g fill="#010607" opacity=".55" filter="url(#shadow)">
+    <path d="M30 0h17l13 232-18 1ZM355 0h15l-7 250-19-1Z"/>
+   </g>
+   <path d="M17-10h16v231H17Z" fill="url(#chain)" transform="rotate(-3 25 0)"/>
+   <path d="M369-18h16v252h-16Z" fill="url(#chain)" transform="rotate(4 375 0)"/>
+   <ellipse cx="199" cy="136" rx="126" ry="158" fill="url(#cone)" class="lamp-core"/>
+   <path d="M197 0V14" stroke="#687066" stroke-width="3"/>
+   <path d="M176 14H221L228 32H169Z" fill="#111b1a" stroke="#665f48" stroke-width="1.5"/>
+   <rect x="178" y="29" width="41" height="10" rx="4" fill="#ddce8d" class="lamp-core"/>
+   <path d="M174 25l3 18h43l4-18m-39 2v16m14-16v16m13-16v16M174 35h49" fill="none" stroke="#1a2420" stroke-width="2"/>
+   <g fill="#8faaa0"><ellipse class="water-drop" cx="95" cy="57" rx=".9" ry="2.5"/><ellipse class="water-drop delayed" cx="309" cy="70" rx=".7" ry="2"/></g>
+   
+   <g filter="url(#wet)" opacity=".22">
+    <ellipse cx="199" cy="251" rx="105" ry="13" fill="#000"/>
+    <path d="M176 275l-8 36 25-2 9-25m35-37l18 44 22-4-20-38" stroke="#8c3027" stroke-width="8"/>
+    <path d="M186 226l-4 84h18l10-85" fill="#b7b491" opacity=".27"/>
+   </g>
+   <g stroke="#c8cba8" stroke-width="1" opacity=".25"><path d="M104 284h41m66 12h67m-118 13h29m97-39h23m-224 22h25m213 12h45"/></g>
+   
+   <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="238" cy="226" rx="16" ry="23" fill="#050a0c" stroke="#172327" stroke-width="6"/>
+    <ellipse cx="238" cy="226" rx="14" ry="21" stroke="#8b272c" stroke-width="2"/>
+    <path d="M238 205v42m-14-21h28m-24-14l20 28m-20 0l20-28" stroke="#743033" stroke-width="1.5"/>
+    <path d="M238 226l54 30M204 213l83 43M213 211l25 15" stroke="#701b25" stroke-width="7"/>
+    <path d="M220 216l60 26-10 12-65-25Z" fill="#60131c" stroke="#ac3431" stroke-width="2"/>
+    <ellipse cx="294" cy="257" rx="22" ry="30" fill="#060b0d" stroke="#182a2b" stroke-width="7"/>
+    <ellipse cx="294" cy="257" rx="19" ry="27" stroke="#a7292a" stroke-width="2.5"/>
+    <path d="M294 230v54m-19-27h38m-33-18l28 36m-28 0l28-36" stroke="#b43230" stroke-width="2"/>
+    <circle cx="294" cy="257" r="4" fill="#c84536" stroke="#541219" stroke-width="2"/>
+    <path d="M189 202l42 21 9-27-34-10" fill="#131b1c" stroke="#070d0f" stroke-width="4"/>
+   </g>
+   
+   <g id="billy-poster">
+    <path d="M185 116q-15 6-21 28l-8 26 16 8 19-29-3 48 44 9 12-57 11 22 15-6-13-35-25-16Z" fill="url(#suit)" stroke="#040a0c" stroke-width="2"/>
+    <path d="M197 115l16 4 12-4-13 44Z" fill="#cbcfc1"/>
+    <path d="M185 121l15-8 12 46-22-21 3-7Zm43-7l13 14-11 8 5 5-23 18Z" fill="#283034" stroke="#0a1113" stroke-width="1"/>
+    <path d="M211 156l-3 37" stroke="#55615a" stroke-opacity=".5"/>
+    <circle cx="214" cy="167" r="1.5" fill="#7b8274"/>
+    <circle cx="211" cy="183" r="1.5" fill="#7b8274"/>
+    <path d="M234 139l-8 2 3-10Z" fill="#9e1c2a"/>
+    <path d="M188 189l23 4-14 28-13 20-17-9 17-30m26-7l23 6-3 31-10 15-13-8 9-18-6-24" fill="#12191c" stroke="#070e10" stroke-width="2"/>
+    <path d="M178 211l15 5m17 6l17 4m-52 8l13 4" stroke="#465352" stroke-opacity=".5"/>
+    <path d="M169 230l18 7-7 12-23-2 1-7Z" fill="#7d2028" stroke="#200f17" stroke-width="2"/>
+    <path d="M210 234l16 8-3 11-24-2 2-8Z" fill="#9b2630" stroke="#260c12" stroke-width="2"/>
+    <path d="M159 241l20 4m22-2l21 6" stroke="#b65744" opacity=".6"/>
+    <g transform="rotate(-9 209 96)">
+     <path d="M183 82q-3-25 23-28 29-3 32 26l-1 32-12 11-33-8-13-15Z" fill="#05090b" stroke="#253335" stroke-width="2"/>
+     <path d="M190 70q18-18 35 1l6 21-9 25-15 5-18-13-5-20Z" fill="url(#ivory)" stroke="#819183" stroke-width="1"/>
+     <path d="M191 78l12-6 4 8m6 0l11-7 4 7" fill="none" stroke="#717764" stroke-width="3"/>
+     <path d="M190 82q7-8 14 0-6 8-14 0m23 1q7-8 14-1-7 9-14 1" fill="#0a1011"/>
+     <ellipse cx="198" cy="82" rx="2.8" ry="3" fill="#b91727"/><ellipse cx="221" cy="83" rx="2.8" ry="3" fill="#b91727"/>
+     <circle cx="198" cy="82" r="1" fill="#030608"/><circle cx="221" cy="83" r="1" fill="#030608"/>
+     <path d="M209 80l-4 15 10 1-3-4" fill="#aebbaa" stroke="#758b80" stroke-width="1"/>
+     <path d="M198 103q12 6 24-1l-3 8-13 1Z" fill="#770f1e"/>
+     <path d="M200 103q9 1 21 0" stroke="#d85048" stroke-width="2"/>
+     <path d="M199 103l1 10 7 7m16-17l-3 11-7 5" fill="none" stroke="#4b6059" stroke-width="1.5"/>
+     <path d="M191 89c-10-1-9 14 0 14s10-12 2-12-7 9-1 9 4-6 0-5m34-6c10 0 9 13 1 13s-9-11-2-11 6 8 1 8-4-5 0-5" fill="none" stroke="#b0202d" stroke-width="1.4"/>
+     <path d="M185 77l-4 16 5 17m44-41l7 19-4 18m-47-34l5-8m8-4l10-3m15 6l5 4" stroke="#4b5350" stroke-width="1.3" fill="none"/>
+    </g>
+    <path d="M210 122l-12-7-2 13 13-2 13 7 3-14Z" fill="#ae2029" stroke="#570e1c" stroke-width="1"/>
+    <ellipse cx="210" cy="124" rx="3" ry="4" fill="#d33736"/>
+    <path d="M158 163l13 4-3 11-15-5Zm94-2l13-2 4 11-13 5Z" fill="#e0dfca" stroke="#6a8278" stroke-width="1.3"/>
+   </g>
+   
+   <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="173" cy="255" rx="43" ry="55" fill="#061014" stroke="#152a2a" stroke-width="8"/>
+    <ellipse cx="173" cy="255" rx="39" ry="51" stroke="#a1242b" stroke-width="3"/>
+    <path d="M173 255v-51m0 51l23-41m-23 41l37-16m-37 16l37 16m-37-16l23 41m-23-41v51m0-51l-23 41m23-41l-37 16m37-16l-37-16m37 16l-23-41" stroke="#a92a2f" stroke-width="1.8"/>
+    <path d="M184 177l-10 77m19-76l-8 66-11 11M179 220l19-13 5-25" stroke="url(#crimson)" stroke-width="7"/>
+    <path d="M188 181l5-24" stroke="url(#steel)" stroke-width="5"/>
+    <path d="M193 160l-25-8-13 7-2 10m41-8l44 6 17-8 7 6" stroke="url(#steel)" stroke-width="4"/>
+    <path d="M148 168l14 4m92-9l12 6" stroke="#b0b8a4" stroke-width="5"/>
+    <path d="M150 168l-3 15 5 9m9-20l-2 21m100-25l3 17" stroke="#781827" stroke-width="1.2"/>
+    <circle cx="173" cy="255" r="6" fill="#b62e2d" stroke="#57131b" stroke-width="2"/>
+    <path d="M173 255l-7-15-11-1m18 16l14 13 11-1" stroke="#6e171e" stroke-width="3"/>
+   </g>
+   <g fill="#d0d6bd" stroke="#6f877c" stroke-width=".8">
+    <path d="M151 160q7-6 13 1l-1 8-3 3-2-7-2 6-2-7-3 4Z"/>
+    <path d="M252 160q7-8 14-1l3 7-3 5-3-7-1 7-3-7-2 5Z"/>
+   </g>
+   <path d="M0 0H400V320H0Z" fill="url(#grime)" pointer-events="none"/>
+   <g stroke="#57736d" opacity=".18" fill="none"><path d="M12 244h32m49 24h24m197 18h32m-21-46h39m-339 63h21"/></g>
+  </svg>
+  <img id="hero" class="hero" alt="Billy approaches on his red tricycle" width="320" height="240">
+  <div class="specimen" aria-hidden="true">ROOM 01<br>CONNECTION PENDING</div>
+ </div>
+ <p id="quote" class="quote">Every connection is a choice.</p>
+ <div id="caption" role="region" aria-live="polite" aria-label="Billy speaks"></div>
+ <div class="controls">
+  <button id="begin" type="button">Click to begin the game</button>
+  <button id="stop" class="secondary" type="button" hidden>Stop</button>
+ </div>
+ <div class="time-row"><span>Time to the next room</span><span id="timer" class="timer">90 seconds</span></div>
+ <progress id="progress" max="90" value="0" aria-label="Time until the next local page"></progress>
+ <p id="status" class="status" role="status" aria-live="polite">Nothing starts until you choose.</p>
+ <p class="notice"><strong>Halloween security-awareness demo.</strong> Sound and gentle motion.
+  When the narration ends, make your choice. If audio fails, continue after 90 active seconds. Stop cancels the game.</p>
+ <div class="footer" aria-hidden="true"><span>The room / poster edition</span><span>Trust is a choice.</span></div>
+</main>
+<audio id="audio" src="/media/saw.mp3" preload="none" playsinline></audio>
+<script>
+(function () {
+  "use strict";
+
+  /* ========= EDIT THESE TO TWEAK TIMINGS =========
+     t = seconds from the start of /media/saw.mp3
+     Subtitles are driven by audio.currentTime (sample-accurate);
+     fallback uses the on-screen elapsed timer when audio is unavailable. */
+  const captions = [
+    {t: 0,   text: ""},
+    {t: 2,   text: "Hello."},
+    {t: 5,   text: "I want to play a game."},
+    {t: 10,  text: "You've connected to a wireless network you don't recognize."},
+    {t: 17,  text: "Your phone \u2014 so trusting, so willing \u2014 reached out and shook hands with a stranger."},
+    {t: 27,  text: "In a few moments, you will be asked for your login details."},
+    {t: 34,  text: "Your email. Your password. The keys to your life."},
+    {t: 41,  text: "A small price, you'll tell yourself... for the convenience of connection."},
+    {t: 50,  text: "But that is not the real question."},
+    {t: 55,  text: "The real question is whether you have the strength to refuse."},
+    {t: 63,  text: "Many have faced this test. Few have passed."},
+    {t: 70,  text: "The choice, as always, is yours."},
+    {t: 78,  text: "Live. Or die."},
+    {t: 83,  text: "Make. Your. Choice."},
+    {t: 90,  text: ""}
+  ];
+  /* ================================================= */
+
+  const portal = document.getElementById("portal");
+  const begin = document.getElementById("begin");
+  const stop = document.getElementById("stop");
+  const audio = document.getElementById("audio");
+  const hero = document.getElementById("hero");
+  const status = document.getElementById("status");
+  const timer = document.getElementById("timer");
+  const progress = document.getElementById("progress");
+  const quote = document.getElementById("quote");
+  const caption = document.getElementById("caption");
+
+  const destination = "/saw-choice";
+  const duration = 90;
+  const reduceMotion =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let running = false;
+  let elapsed = 0;
+  let previous = 0;
+  let interval = null;
+  let session = 0;
+  let audioOk = true;
+  let currentCaption = -1;
+  let endedByAudio = false;
+
+  function setCaptionByTime(seconds) {
+    let idx = -1;
+    for (let i = 0; i < captions.length; i++) {
+      if (captions[i].t <= seconds) idx = i;
+      else break;
+    }
+    if (idx === currentCaption) return;
+    currentCaption = idx;
+
+    const text = idx >= 0 ? captions[idx].text : "";
+    caption.textContent = text;
+    if (text) {
+      caption.classList.add("on");
+      portal.classList.add("caption-on");
+    } else {
+      caption.classList.remove("on");
+      if (!running) portal.classList.remove("caption-on");
+    }
+  }
+
+  function resetCaption() {
+    currentCaption = -1;
+    caption.textContent = "";
+    caption.classList.remove("on");
+    portal.classList.remove("caption-on");
+  }
+
+  function updateCaptionFromAudio() {
+    if (!running || !audioOk) return;
+    setCaptionByTime(audio.currentTime || 0);
+  }
+
+  audio.addEventListener("timeupdate", updateCaptionFromAudio);
+  audio.addEventListener("ended", function () {
+    if (!running) return;
+    endedByAudio = true;
+    setCaptionByTime(duration);
+    end("The game begins. Make your choice.");
+    window.location.assign(destination);
+  });
+
+  function playAudio() {
+    const currentSession = session;
+    const request = audio.play();
+    if (request && request.catch) {
+      request.catch(function () {
+        if (running && currentSession === session) {
+          audioOk = false;
+          status.textContent =
+            "Audio blocked. Reading Billy's lines on screen instead.";
+        }
+      });
+    }
+  }
+
+  audio.addEventListener("error", function () {
+    audioOk = false;
+    if (running) {
+      status.textContent =
+        "Local audio could not load. Subtitles will follow the timer.";
+    }
+  });
+
+  hero.addEventListener("error", function () {
+    hero.style.display = "none";
+    if (running) {
+      status.textContent =
+        "Local animation unavailable. The doorway scene continues.";
+    }
+  });
+
+  function end(message) {
+    running = false;
+    session++;
+    clearInterval(interval);
+    interval = null;
+    audio.pause();
+    try { audio.currentTime = 0; } catch (_) {}
+    portal.classList.remove("running");
+    begin.disabled = false;
+    stop.hidden = true;
+    status.textContent = message;
+  }
+
+  function tick() {
+    if (!running) return;
+    const now = performance.now();
+
+    if (!document.hidden) {
+      elapsed += (now - previous) / 1000;
+    }
+    previous = now;
+
+    const remaining = Math.max(0, Math.ceil(duration - elapsed));
+    progress.value = Math.min(duration, elapsed);
+    timer.textContent = remaining + " seconds";
+
+    // Fallback caption driver when audio is not keeping time.
+    if (!audioOk) setCaptionByTime(elapsed);
+
+    if (elapsed >= duration && !endedByAudio) {
+      end("The game begins. Make your choice.");
+      window.location.assign(destination);
+    }
+  }
+
+  begin.addEventListener("click", function () {
+    if (running) return;
+    session++;
+    elapsed = 0;
+    previous = performance.now();
+    running = true;
+    audioOk = true;
+    endedByAudio = false;
+    resetCaption();
+    begin.disabled = true;
+    stop.hidden = false;
+    progress.value = 0;
+    portal.classList.add("running");
+    // Hide the legacy quote once the subtitle track takes over.
+    quote.setAttribute("hidden", "");
+
+    status.textContent =
+      "Game running. Billy is speaking. Stop remains available throughout.";
+
+    if (!reduceMotion && !hero.getAttribute("src")) {
+      hero.src = "/media/jigsaw.gif";
+    }
+    try { audio.currentTime = 0; } catch (_) {}
+    playAudio();
+    interval = setInterval(tick, 250);
+  });
+
+  stop.addEventListener("click", function () {
+    end("Stopped. No automatic transition will occur.");
+    resetCaption();
+    quote.removeAttribute("hidden");
+    timer.textContent = "Stopped";
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    previous = performance.now();
+    if (!running) return;
+    if (document.hidden) audio.pause();
+    else playAudio();
+  });
+
+  window.addEventListener("pagehide", function () {
+    end("Stopped.");
+  });
+}());
+</script>
+</body>
+</html>
