@@ -403,8 +403,16 @@ progress::-moz-progress-bar{background:#b64139}
     }
     previous = now;
 
-    const remaining = Math.max(0, Math.ceil(duration - elapsed));
-    progress.value = Math.min(duration, elapsed);
+    // Codex finding 2026-10-05 10:36 UTC: when audio is working, display must track
+    // audio.currentTime, not the elapsed wall-clock. Otherwise, with a delayed audio
+    // load, the countdown reads "0 seconds" + progress bar fills while narration is
+    // still playing (we correctly refuse to redirect, but the UI lies). Fallback to
+    // elapsed only when audio is unavailable.
+    const displayT = (audioOk && audio.duration > 0)
+      ? Math.min(audio.currentTime || 0, duration)
+      : Math.min(elapsed, duration);
+    const remaining = Math.max(0, Math.ceil(duration - displayT));
+    progress.value = displayT;
     timer.textContent = remaining + " seconds";
 
     // Fallback caption driver when audio is not keeping time.
