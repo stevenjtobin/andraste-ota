@@ -181,7 +181,6 @@
     width:84px;height:108px;
     pointer-events:none;
   }
-  .billy svg{display:block;width:100%;height:100%;filter:drop-shadow(0 4px 10px rgba(0,0,0,.9))}
 
   .warning{
     font-family:Georgia,serif;
@@ -428,6 +427,13 @@
     #creds-form{animation:none}
     .choice-btn{transition:none}
   }
+
+  .billy img{display:block;width:100%;height:100%;object-fit:cover;border-radius:3px;box-shadow:0 4px 14px #000a}
+  #enter-btn{animation:choice-breathe 1.8s ease-in-out infinite}
+  #enter-btn:hover,#enter-btn:focus-visible,#enter-btn[aria-expanded="true"]{animation:none}
+  @keyframes choice-breathe{0%,100%{transform:scale(1);box-shadow:0 0 0 rgba(163,19,32,0)}
+    50%{transform:scale(1.025);box-shadow:0 0 18px rgba(163,19,32,.32)}}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -507,40 +513,7 @@
 
     <main>
       <section class="scene" aria-labelledby="billy-warn">
-        <div class="billy" aria-hidden="true">
-          <svg viewBox="0 0 84 108" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="42" cy="58" rx="34" ry="42" fill="#ebe3d4"/>
-            <ellipse cx="42" cy="58" rx="34" ry="42" fill="none" stroke="#1a1510" stroke-width="1"/>
-            <path d="M8 50 Q4 58 10 68" fill="none" stroke="#1a1510" stroke-width="1" opacity=".4"/>
-            <path d="M76 50 Q80 58 74 68" fill="none" stroke="#1a1510" stroke-width="1" opacity=".4"/>
-            <path d="M18 30 Q42 10 66 30 L62 42 Q42 24 22 42 Z" fill="#1a1510"/>
-            <path d="M28 32 Q42 20 56 32" fill="none" stroke="#5a3a2a" stroke-width="1" opacity=".5"/>
-            <ellipse cx="30" cy="50" rx="7" ry="8" fill="#1a1510"/>
-            <ellipse cx="54" cy="50" rx="7" ry="8" fill="#1a1510"/>
-            <circle cx="30" cy="50" r="3.5" fill="#d64149"/>
-            <circle cx="54" cy="50" r="3.5" fill="#d64149"/>
-            <circle cx="31" cy="49" r="1" fill="#fff" opacity=".8"/>
-            <circle cx="55" cy="49" r="1" fill="#fff" opacity=".8"/>
-            <g fill="none" stroke="#a31320" stroke-width="2.2" stroke-linecap="round">
-              <path d="M22 68 Q18 76 22 82"/>
-              <path d="M24 72 Q18 78 20 86"/>
-              <path d="M62 68 Q66 76 62 82"/>
-              <path d="M60 72 Q66 78 64 86"/>
-            </g>
-            <path d="M30 82 Q42 92 54 82 L52 86 Q42 94 32 86 Z" fill="#1a1510"/>
-            <g stroke="#ebe3d4" stroke-width="1" fill="none" opacity=".9">
-              <line x1="32" y1="83" x2="32" y2="88"/>
-              <line x1="36" y1="85" x2="36" y2="90"/>
-              <line x1="40" y1="86" x2="40" y2="91"/>
-              <line x1="44" y1="86" x2="44" y2="91"/>
-              <line x1="48" y1="85" x2="48" y2="90"/>
-              <line x1="52" y1="83" x2="52" y2="88"/>
-            </g>
-            <path d="M42 96 Q38 100 36 104 M42 96 Q46 100 48 104" stroke="#1a1510" stroke-width="1" fill="none" opacity=".4"/>
-            <path d="M12 55 Q6 60 14 70" fill="none" stroke="#1a1510" stroke-width="2" opacity=".6"/>
-            <path d="M72 55 Q78 60 70 70" fill="none" stroke="#1a1510" stroke-width="2" opacity=".6"/>
-          </svg>
-        </div>
+        <div class="billy" aria-hidden="true"><img src="/media/jigsaw_face.png" alt="" width="116" height="142"></div>
         <div class="warning" id="billy-warn">
           <p>Hello. I want to play a game. Behind one door lies <em>temptation</em> — a simple form, a familiar ritual. Type your name. Type your secret. Hand them to a stranger on a strange network.</p>
           <p>Behind the other door lies <strong>wisdom</strong>. The courage to say no. The instinct that <em>saves you</em>.</p>
@@ -553,7 +526,7 @@
       </div>
 
       <div class="choices" role="group" aria-label="Make your choice">
-        <button type="button" id="enter-btn" aria-expanded="false" aria-controls="creds-form">
+        <button type="button" id="enter-btn" class="choice-btn" aria-expanded="false" aria-controls="creds-form">
           <span class="label">Enter My Login Details</span>
           <span class="sub">Trust the stranger</span>
         </button>
