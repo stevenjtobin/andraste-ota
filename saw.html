@@ -762,14 +762,23 @@ progress{width:100%;height:5px;accent-color:var(--red);margin-top:6px}
     }
     previous = now;
 
-    const remaining = Math.max(0, Math.ceil(duration - elapsed));
-    progress.value = Math.min(duration, elapsed);
+    // Progress source: when audio is loaded and playing, follow
+    // audio.currentTime so a stall or slow load keeps the bar truthful.
+    // When audio has failed, fall back to the elapsed wall-clock timer.
+    const t = audioOk ? (audio.currentTime || 0) : elapsed;
+    const remaining = Math.max(0, Math.ceil(duration - t));
+    progress.value = Math.min(duration, t);
     timer.textContent = remaining + " seconds";
 
     // Fallback caption driver when audio is not keeping time.
     if (!audioOk) setCaptionByTime(elapsed);
 
-    if (elapsed >= duration && !endedByAudio) {
+    // Wall-clock redirect runs ONLY on the no-audio fallback path, and only
+    // after a 3-s grace period so the autoplay promise / error event has
+    // time to resolve. On the audio-OK path the only redirect trigger is
+    // the audio 'ended' event (see above), so Billy's 32.13-s recording can
+    // never be clipped short by a slightly-off wall-clock duration estimate.
+    if (!audioOk && elapsed >= 3 && elapsed >= duration && !endedByAudio) {
       end("The game begins. Make your choice.");
       window.location.assign(destination);
     }

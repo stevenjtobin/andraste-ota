@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- STEVEN:TITLE -->
+<!-- Change the <title>, h1 and .tag text below to re-skin this delivery page.
+     Operators drop ONE file into /andraste/payloads/Delivery/ on the SD card;
+     this page's Download button serves whatever single file lives there.
+     Framework ships this folder EMPTY on purpose. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>Andraste · File Delivery</title>
+<style>
+:root{
+  --bg:#0e1116;
+  --panel:#161b22;
+  --panel-2:#1f242c;
+  --ink:#e6edf3;
+  --dim:#8b949e;
+  --mute:#6e7781;
+  --accent:#2f81f7;
+  --accent-strong:#1f6feb;
+  --ok:#3fb950;
+  --warn:#d29922;
+  --line:#30363d;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --bg:#f6f8fa;--panel:#fff;--panel-2:#f0f3f6;--ink:#1f2328;
+    --dim:#656d76;--mute:#8c959f;--line:#d0d7de;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:var(--bg);color:var(--ink);
+  font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px 16px 32px;
+  text-align:center;
+}
+.brand{
+  font:11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color:var(--mute);letter-spacing:.28em;text-transform:uppercase;
+  margin-bottom:18px;
+}
+.card{
+  width:100%;max-width:420px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:24px 20px 22px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+.icon{
+  width:56px;height:56px;margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:14px;background:var(--panel-2);
+  border:1px solid var(--line);
+}
+.icon svg{width:28px;height:28px;stroke:var(--accent);fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+h1{
+  font-size:22px;font-weight:700;line-height:1.25;
+  margin-bottom:6px;
+  letter-spacing:-.01em;
+}
+.tag{
+  color:var(--dim);
+  font-size:14px;line-height:1.5;
+  margin-bottom:20px;
+}
+.filebox{
+  display:flex;align-items:center;gap:10px;
+  background:var(--panel-2);border:1px solid var(--line);
+  border-radius:10px;padding:10px 12px;
+  font:13px/1.3 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color:var(--dim);
+  text-align:left;
+  margin-bottom:16px;
+  min-height:44px;
+  word-break:break-all;
+}
+.filebox .dot{
+  flex-shrink:0;width:8px;height:8px;border-radius:50%;
+  background:var(--mute);
+}
+.filebox.ready .dot{background:var(--ok)}
+.filebox.missing .dot{background:var(--warn)}
+button{
+  display:block;width:100%;
+  min-height:48px;padding:12px 16px;
+  background:var(--accent);color:#fff;
+  border:0;border-radius:10px;
+  font:600 16px/1.2 inherit;letter-spacing:.01em;
+  cursor:pointer;
+  transition:background .15s ease,transform .05s ease;
+}
+button:hover{background:var(--accent-strong)}
+button:active{transform:translateY(1px)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+button:disabled{opacity:.55;cursor:default;background:var(--mute)}
+.status{
+  margin-top:12px;min-height:1.4em;
+  font-size:13px;color:var(--dim);
+}
+.footer{
+  margin-top:22px;
+  font-size:11px;color:var(--mute);
+  line-height:1.5;
+  max-width:420px;
+}
+.footer strong{color:var(--dim)}
+noscript{display:block;margin-top:12px;color:var(--warn);font-size:12px}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">Andraste &middot; Delivery</div>
+  <div class="card">
+    <div class="icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </div>
+    <h1>Your file is ready</h1>
+    <p class="tag">Tap the button below to download the file.</p>
+
+    <div id="filebox" class="filebox" role="status" aria-live="polite">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="filename">Preparing your file...</span>
+    </div>
+
+    <button id="dl" type="button">Download</button>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+    <noscript>JavaScript is disabled. Tap the Download button to continue.</noscript>
+  </div>
+  <p class="footer">
+    <strong>Awareness training demo on an authorized network.</strong><br>
+    The operator populated this delivery.
+  </p>
+</main>
+<script>
+(function(){
+  "use strict";
+  var btn = document.getElementById("dl");
+  var status = document.getElementById("status");
+  var filename = document.getElementById("filename");
+  var filebox = document.getElementById("filebox");
+
+  // Probe /delivery-file with HEAD to show the real filename + size and to detect
+  // the "nothing dropped yet" state WITHOUT auto-starting the download.
+  function probe(){
+    try{
+      var x = new XMLHttpRequest();
+      x.open("HEAD", "/delivery-file", true);
+      x.onreadystatechange = function(){
+        if (x.readyState !== 4) return;
+        if (x.status >= 200 && x.status < 300){
+          var cd = x.getResponseHeader("Content-Disposition") || "";
+          var m = cd.match(/filename="?([^"]+)"?/i);
+          var name = m ? m[1] : "file";
+          var len = parseInt(x.getResponseHeader("Content-Length") || "0", 10);
+          var size = len ? " (" + fmt(len) + ")" : "";
+          filename.textContent = name + size;
+          filebox.className = "filebox ready";
+          btn.disabled = false;
+        } else {
+          filename.textContent = "No file available right now.";
+          filebox.className = "filebox missing";
+          btn.disabled = true;
+        }
+      };
+      x.send();
+    } catch(_){ /* leave the default label; click still works */ }
+  }
+  function fmt(n){
+    if (n >= 1048576) return (n/1048576).toFixed(1) + " MB";
+    if (n >= 1024)    return (n/1024).toFixed(1) + " KB";
+    return n + " B";
+  }
+
+  btn.addEventListener("click", function(){
+    status.textContent = "Download will start automatically.";
+    btn.disabled = true;
+    btn.textContent = "Starting download...";
+    // /delivery-tap logs the click, then 302s to /delivery-file which serves
+    // the SD-sourced file with Content-Disposition: attachment.
+    setTimeout(function(){
+      window.location.href = "/delivery-tap";
+    }, 150);
+  });
+
+  // Initial state.
+  filename.textContent = "Preparing your file...";
+  probe();
+}());
+</script>
+</body>
+</html>
