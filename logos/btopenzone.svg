@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 90">
+  <rect width="320" height="90" fill="#5514B4"/>
+  <circle cx="90" cy="45" r="32" fill="none" stroke="white" stroke-width="4"/>
+  <text x="90" y="57" font-family="Arial Black,Arial,sans-serif" font-size="36" font-weight="900" fill="white" text-anchor="middle">BT</text>
+  <text x="205" y="56" font-family="Arial,sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">Openzone</text>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 90">
+  <rect width="320" height="90" fill="#E8112D"/>
+  <rect x="30" y="10" width="60" height="70" fill="white" transform="rotate(-45 60 45)"/>
+  <text x="185" y="38" font-family="Arial Black,Arial,sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="1">NETWORK</text>
+  <text x="185" y="62" font-family="Arial Black,Arial,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">RAIL</text>
+</svg>

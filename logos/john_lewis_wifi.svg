@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 90">
+  <rect width="320" height="90" fill="#141414"/>
+  <text x="160" y="40" font-family="Georgia,Times New Roman,serif" font-size="22" fill="white" text-anchor="middle" letter-spacing="6">JOHN LEWIS</text>
+  <line x1="60" y1="50" x2="260" y2="50" stroke="white" stroke-width="1"/>
+  <text x="160" y="74" font-family="Georgia,Times New Roman,serif" font-size="16" fill="#aaa" text-anchor="middle" letter-spacing="4">&#38; PARTNERS</text>
+</svg>
