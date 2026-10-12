@@ -1,0 +1,15 @@
+# qwen3-fast — qwen3:4b with /no_think baked in so it stops writing 1000-token
+# "thinking" monologues before answering. Based on the ASUS Parrot chat's suggestion.
+#
+# Build:  ollama create qwen3-fast -f qwen3-fast.Modelfile
+# Use:    uncomment "qwen3-fast" in bench.py's DEFAULT_MODELS and rerun.
+
+FROM qwen3:4b
+
+SYSTEM """You are a terse technical assistant. Never show reasoning or thinking blocks. Answer directly with the technical substance only.
+/no_think
+"""
+
+PARAMETER num_predict 600
+PARAMETER temperature 0.1
+PARAMETER repeat_penalty 1.15
