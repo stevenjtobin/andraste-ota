@@ -358,11 +358,11 @@ async function startCrack(){
   if(isDemo){
     wlData=demoWords();  // fresh shuffle + random target position each run
   } else if(wlSrc==='sd'){
-    wlUrl='/dl?f='+encodeURIComponent('/andraste/loot/rockyou.txt');
+    wlUrl=location.origin+'/dl?f='+encodeURIComponent('/andraste/loot/rockyou.txt');
   } else if(wlSrc==='sdpath'){
     var p=document.getElementById('wlPath').value.trim();
     if(!p){alert('Enter SD wordlist path.');return;}
-    wlUrl='/dl?f='+encodeURIComponent(p);
+    wlUrl=location.origin+'/dl?f='+encodeURIComponent(p);
   } else {
     var file=document.getElementById('wlFile').files[0];
     if(!file){alert('Select a wordlist file.');return;}
