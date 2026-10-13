@@ -87,15 +87,31 @@ select{width:100%;background:var(--card);color:var(--txt);border:1px solid var(-
 
   <div class="lbl" style="margin-top:8px">Wordlist source</div>
   <select id="wlSrc" onchange="wlChange()">
-    <option value="sd">SD: /andraste/loot/rockyou.txt (default)</option>
+    <option value="sd_berserker">SD: berserker 2M (password-lists)</option>
+    <option value="sd">SD: /andraste/loot/rockyou.txt</option>
     <option value="sdpath">SD: enter path manually</option>
     <option value="upload">Upload from phone</option>
+    <option value="brute">Brute force (mask &mdash; small keyspaces only)</option>
   </select>
   <div id="wlPathDiv" style="display:none;margin-top:4px">
-    <input id="wlPath" type="text" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-family:monospace;font-size:12px;outline:none" placeholder="/andraste/loot/wordlist.txt">
+    <input id="wlPath" type="text" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-family:monospace;font-size:12px;outline:none" placeholder="/andraste/password-lists/berserker-2million-passwords.txt">
   </div>
   <div id="wlFileDiv" style="display:none;margin-top:4px">
     <input id="wlFile" type="file" accept=".txt" style="color:var(--dim);font-size:12px">
+  </div>
+  <div id="wlBruteDiv" style="display:none;margin-top:6px">
+    <div class="lbl">Charset</div>
+    <select id="bruteCs" onchange="bruteEst()" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-family:monospace;font-size:12px">
+      <option value="0123456789">digits 0-9 (the only realistic one for WPA)</option>
+      <option value="abcdefghijklmnopqrstuvwxyz">lowercase a-z</option>
+      <option value="abcdefghijklmnopqrstuvwxyz0123456789">lower + digits</option>
+      <option value="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789">alnum (huge)</option>
+    </select>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <div style="flex:1"><div class="lbl">Min len</div><input id="bruteMin" type="number" value="8" min="1" max="12" onchange="bruteEst()" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-size:12px"></div>
+      <div style="flex:1"><div class="lbl">Max len</div><input id="bruteMax" type="number" value="8" min="1" max="12" onchange="bruteEst()" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-size:12px"></div>
+    </div>
+    <div id="bruteEstOut" style="margin-top:4px;font-size:12px;color:var(--dim)"></div>
   </div>
 
   <label class="ck-row" style="margin-top:10px">
@@ -305,6 +321,20 @@ function wlChange(){
   var src=document.getElementById('wlSrc').value;
   document.getElementById('wlPathDiv').style.display = src==='sdpath'?'block':'none';
   document.getElementById('wlFileDiv').style.display = src==='upload'?'block':'none';
+  document.getElementById('wlBruteDiv').style.display = src==='brute'?'block':'none';
+  if(src==='brute') bruteEst();
+}
+// Live keyspace + ETA estimate for the brute-force mask. ~1500 PBKDF2/s is a rough mid-phone rate.
+function bruteEst(){
+  var cs=document.getElementById('bruteCs').value.length;
+  var mn=parseInt(document.getElementById('bruteMin').value)||1;
+  var mx=parseInt(document.getElementById('bruteMax').value)||mn;
+  if(mx<mn) mx=mn;
+  var total=0; for(var L=mn;L<=mx;L++) total+=Math.pow(cs,L);
+  var secs=total/1500;
+  var t = secs>31536000?(secs/31536000).toFixed(1)+' years':secs>86400?(secs/86400).toFixed(1)+' days':secs>3600?(secs/3600).toFixed(1)+' h':secs>60?(secs/60).toFixed(0)+' min':secs.toFixed(0)+' s';
+  var warn = total>5e8 ? ' &mdash; &#9888; likely infeasible on a phone' : '';
+  document.getElementById('bruteEstOut').innerHTML='Keyspace: '+Math.round(total).toLocaleString()+' &middot; ~'+t+' @1.5k/s'+warn;
 }
 
 function stopCrack(){
@@ -354,22 +384,31 @@ async function startCrack(){
   }
 
   var wlSrc=document.getElementById('wlSrc').value;
-  var wlUrl=null, wlData=null;
+  var wlUrl=null, wlData=null, brute=null;
   if(isDemo){
     wlData=demoWords();  // fresh shuffle + random target position each run
+  } else if(wlSrc==='sd_berserker'){
+    wlUrl=location.origin+'/dl?f='+encodeURIComponent('/andraste/password-lists/berserker-2million-passwords.txt');
   } else if(wlSrc==='sd'){
     wlUrl=location.origin+'/dl?f='+encodeURIComponent('/andraste/loot/rockyou.txt');
   } else if(wlSrc==='sdpath'){
     var p=document.getElementById('wlPath').value.trim();
     if(!p){alert('Enter SD wordlist path.');return;}
     wlUrl=location.origin+'/dl?f='+encodeURIComponent(p);
+  } else if(wlSrc==='brute'){
+    var bcs=document.getElementById('bruteCs').value;
+    var bmn=parseInt(document.getElementById('bruteMin').value)||1;
+    var bmx=parseInt(document.getElementById('bruteMax').value)||bmn;
+    if(bmx<bmn){alert('Max length must be >= min length.');return;}
+    brute={charset:bcs,minLen:bmn,maxLen:bmx};
   } else {
     var file=document.getElementById('wlFile').files[0];
     if(!file){alert('Select a wordlist file.');return;}
     wlData=await file.text();
   }
 
-  var mutate=document.getElementById('mutate').checked;
+  // Mutations only make sense for a wordlist; brute force already enumerates the keyspace.
+  var mutate=document.getElementById('mutate').checked && wlSrc!=='brute';
 
   if(gWorker){gWorker.terminate();gWorker=null;}
   document.getElementById('startBtn').style.display='none';
@@ -405,7 +444,7 @@ async function startCrack(){
     }
   };
 
-  gWorker.postMessage({targets:targets,wlUrl:wlUrl,wlData:wlData,mutate:mutate});
+  gWorker.postMessage({targets:targets,wlUrl:wlUrl,wlData:wlData,brute:brute,mutate:mutate});
 }
 
 function crackWorkerSrc(){
@@ -537,6 +576,21 @@ async function* streamLines(url){
   if(buf.trim()) yield buf.trim();
 }
 
+// Brute force: enumerate every string over charset for lengths minLen..maxLen (odometer).
+function* bruteGen(charset, minLen, maxLen){
+  var cs=charset.split('');
+  for(var L=minLen; L<=maxLen; L++){
+    var idx=new Array(L).fill(0);
+    while(true){
+      var s=''; for(var k=0;k<L;k++) s+=cs[idx[k]];
+      yield s;
+      var p=L-1;
+      while(p>=0){ idx[p]++; if(idx[p]<cs.length) break; idx[p]=0; p--; }
+      if(p<0) break;
+    }
+  }
+}
+
 self.onmessage=async function(e){
   targets=e.data.targets;
   doMutate=e.data.mutate;
@@ -551,7 +605,13 @@ self.onmessage=async function(e){
   };
 
   try{
-    if(e.data.wlData){
+    if(e.data.brute){
+      var b=e.data.brute;
+      for(var pw of bruteGen(b.charset,b.minLen,b.maxLen)){
+        if(found) break;
+        await add(pw);
+      }
+    } else if(e.data.wlData){
       for(var line of e.data.wlData.split('\\n')){
         if(found) break;
         line=line.trim(); if(line) await add(line);
