@@ -1,9 +1,9 @@
 {
-  "version": "2026-10-12.40051df",
+  "version": "2026-10-13.03a565e",
   "base": "https://raw.githubusercontent.com/stevenjtobin/andraste-ota/main/",
   "files": [
     { "sd": "/andraste/media/cheese.gif", "src": "cheese.gif", "size": 37550, "sha": "8084524ccce2c490" },
-    { "sd": "/andraste/portal/chef.html", "src": "chef.html", "size": 25643, "sha": "c5f077ed77d0969f" },
+    { "sd": "/andraste/portal/chef.html", "src": "chef.html", "size": 25675, "sha": "6e0d6451cb1c5603" },
     { "sd": "/andraste/portal/delivery.html", "src": "delivery.html", "size": 6570, "sha": "30bb8c2e3de14ad6" },
     { "sd": "/andraste/portal/hb.html", "src": "hb.html", "size": 3294, "sha": "9bf85fde55d875c6" },
     { "sd": "/andraste/media/jigsaw.gif", "src": "jigsaw.gif", "size": 360888, "sha": "4e5d916a6193ef34" },
