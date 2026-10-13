@@ -100,17 +100,16 @@ select{width:100%;background:var(--card);color:var(--txt);border:1px solid var(-
     <input id="wlFile" type="file" accept=".txt" style="color:var(--dim);font-size:12px">
   </div>
   <div id="wlBruteDiv" style="display:none;margin-top:6px">
-    <div class="lbl">Charset</div>
-    <select id="bruteCs" onchange="bruteEst()" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-family:monospace;font-size:12px">
-      <option value="0123456789">digits 0-9 (the only realistic one for WPA)</option>
-      <option value="abcdefghijklmnopqrstuvwxyz">lowercase a-z</option>
-      <option value="abcdefghijklmnopqrstuvwxyz0123456789">lower + digits</option>
-      <option value="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789">alnum (huge)</option>
-    </select>
-    <div style="display:flex;gap:8px;margin-top:4px">
-      <div style="flex:1"><div class="lbl">Min len</div><input id="bruteMin" type="number" value="8" min="1" max="12" onchange="bruteEst()" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-size:12px"></div>
-      <div style="flex:1"><div class="lbl">Max len</div><input id="bruteMax" type="number" value="8" min="1" max="12" onchange="bruteEst()" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-size:12px"></div>
+    <div class="lbl">Include in the brute force</div>
+    <label class="ck-row"><input type="checkbox" id="bcNum" checked onchange="bruteEst()"><span>Numbers &nbsp;0-9</span></label>
+    <label class="ck-row"><input type="checkbox" id="bcLow" onchange="bruteEst()"><span>Lowercase &nbsp;a-z</span></label>
+    <label class="ck-row"><input type="checkbox" id="bcUp" onchange="bruteEst()"><span>Uppercase &nbsp;A-Z</span></label>
+    <label class="ck-row"><input type="checkbox" id="bcSym" onchange="bruteEst()"><span>Symbols &nbsp;!@#$%^&amp;*()-_=+</span></label>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <div style="flex:1"><div class="lbl">Min length</div><input id="bruteMin" type="number" value="8" min="1" max="16" onchange="bruteEst()" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-size:12px"></div>
+      <div style="flex:1"><div class="lbl">Max length</div><input id="bruteMax" type="number" value="8" min="1" max="16" onchange="bruteEst()" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-size:12px"></div>
     </div>
+    <div class="lbl" style="margin-top:4px;color:var(--dim)">WPA passwords are 8-63 chars, so min 8 is the floor for WiFi.</div>
     <div id="bruteEstOut" style="margin-top:4px;font-size:12px;color:var(--dim)"></div>
   </div>
 
@@ -324,17 +323,33 @@ function wlChange(){
   document.getElementById('wlBruteDiv').style.display = src==='brute'?'block':'none';
   if(src==='brute') bruteEst();
 }
-// Live keyspace + ETA estimate for the brute-force mask. ~1500 PBKDF2/s is a rough mid-phone rate.
+// Build the charset from the ticked boxes, in digits->lower->upper->symbols order so a length-1
+// pass enumerates 0-9, then a-z, then A-Z, then symbols (matches the user's mental model).
+function bruteCharset(){
+  var cs='';
+  if(document.getElementById('bcNum').checked) cs+='0123456789';
+  if(document.getElementById('bcLow').checked) cs+='abcdefghijklmnopqrstuvwxyz';
+  if(document.getElementById('bcUp').checked)  cs+='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if(document.getElementById('bcSym').checked) cs+='!@#$%^&*()-_=+';
+  return cs;
+}
+// Live keyspace + ETA estimate. ~1500 PBKDF2/s is a rough mid-phone rate.
 function bruteEst(){
-  var cs=document.getElementById('bruteCs').value.length;
+  var n=bruteCharset().length;
   var mn=parseInt(document.getElementById('bruteMin').value)||1;
   var mx=parseInt(document.getElementById('bruteMax').value)||mn;
   if(mx<mn) mx=mn;
-  var total=0; for(var L=mn;L<=mx;L++) total+=Math.pow(cs,L);
+  var out=document.getElementById('bruteEstOut');
+  if(n===0){ out.innerHTML='&#9888; Tick at least one character set.'; return; }
+  var total=0; for(var L=mn;L<=mx;L++) total+=Math.pow(n,L);
+  if(total>1e15){
+    out.innerHTML='Charset '+n+' chars &middot; keyspace ~'+total.toExponential(1)+' &mdash; &#9888; astronomical, will never finish on a phone';
+    return;
+  }
   var secs=total/1500;
-  var t = secs>31536000?(secs/31536000).toFixed(1)+' years':secs>86400?(secs/86400).toFixed(1)+' days':secs>3600?(secs/3600).toFixed(1)+' h':secs>60?(secs/60).toFixed(0)+' min':secs.toFixed(0)+' s';
-  var warn = total>5e8 ? ' &mdash; &#9888; likely infeasible on a phone' : '';
-  document.getElementById('bruteEstOut').innerHTML='Keyspace: '+Math.round(total).toLocaleString()+' &middot; ~'+t+' @1.5k/s'+warn;
+  var t = secs>31536000?(secs/31536000).toExponential(1)+' years':secs>86400?(secs/86400).toFixed(1)+' days':secs>3600?(secs/3600).toFixed(1)+' h':secs>60?(secs/60).toFixed(0)+' min':secs.toFixed(0)+' s';
+  var warn = total>5e8 ? ' &mdash; &#9888; likely infeasible' : '';
+  out.innerHTML='Charset '+n+' chars &middot; keyspace '+Math.round(total).toLocaleString()+' &middot; ~'+t+' @1.5k/s'+warn;
 }
 
 function stopCrack(){
@@ -396,7 +411,8 @@ async function startCrack(){
     if(!p){alert('Enter SD wordlist path.');return;}
     wlUrl=location.origin+'/dl?f='+encodeURIComponent(p);
   } else if(wlSrc==='brute'){
-    var bcs=document.getElementById('bruteCs').value;
+    var bcs=bruteCharset();
+    if(!bcs){alert('Tick at least one character set (numbers / letters / symbols).');return;}
     var bmn=parseInt(document.getElementById('bruteMin').value)||1;
     var bmx=parseInt(document.getElementById('bruteMax').value)||bmn;
     if(bmx<bmn){alert('Max length must be >= min length.');return;}
