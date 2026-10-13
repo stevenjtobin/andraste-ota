@@ -333,7 +333,9 @@ function bruteCharset(){
   if(document.getElementById('bcSym').checked) cs+='!@#$%^&*()-_=+';
   return cs;
 }
-// Live keyspace + ETA estimate. ~1500 PBKDF2/s is a rough mid-phone rate.
+// Live keyspace + ETA estimate. ~15 guesses/sec is the real pure-JS rate over HTTP (WebCrypto,
+// which is ~100x faster, is unavailable without HTTPS). So only tiny keyspaces are realistic here.
+var JS_RATE=15;
 function bruteEst(){
   var n=bruteCharset().length;
   var mn=parseInt(document.getElementById('bruteMin').value)||1;
@@ -342,14 +344,14 @@ function bruteEst(){
   var out=document.getElementById('bruteEstOut');
   if(n===0){ out.innerHTML='&#9888; Tick at least one character set.'; return; }
   var total=0; for(var L=mn;L<=mx;L++) total+=Math.pow(n,L);
-  if(total>1e15){
-    out.innerHTML='Charset '+n+' chars &middot; keyspace ~'+total.toExponential(1)+' &mdash; &#9888; astronomical, will never finish on a phone';
+  if(total>1e12){
+    out.innerHTML='Charset '+n+' chars &middot; keyspace ~'+total.toExponential(1)+' &mdash; &#9888; astronomical, will never finish';
     return;
   }
-  var secs=total/1500;
+  var secs=total/JS_RATE;
   var t = secs>31536000?(secs/31536000).toExponential(1)+' years':secs>86400?(secs/86400).toFixed(1)+' days':secs>3600?(secs/3600).toFixed(1)+' h':secs>60?(secs/60).toFixed(0)+' min':secs.toFixed(0)+' s';
-  var warn = total>5e8 ? ' &mdash; &#9888; likely infeasible' : '';
-  out.innerHTML='Charset '+n+' chars &middot; keyspace '+Math.round(total).toLocaleString()+' &middot; ~'+t+' @1.5k/s'+warn;
+  var warn = total>2e6 ? ' &mdash; &#9888; slow (~'+JS_RATE+'/s)' : '';
+  out.innerHTML='Charset '+n+' chars &middot; keyspace '+Math.round(total).toLocaleString()+' &middot; ~'+t+' @~'+JS_RATE+'/s'+warn;
 }
 
 function stopCrack(){
@@ -475,6 +477,62 @@ function hexToBytes(h){
   return b;
 }
 
+// ---- Pure-JS WPA crypto (WebCrypto's crypto.subtle is unavailable over plain http://172.0.0.1
+//      because WebCrypto requires a secure context). Verified against SHA1("abc"), RFC2202 HMAC,
+//      and the WPA PBKDF2 vector pass="password" ssid="IEEE" -> f42c6fc5... ----
+function utf8(s){ return new TextEncoder().encode(s); }
+function sha1(msg){
+  var ml=msg.length, withOne=ml+1;
+  var totalLen=withOne + ((56-(withOne%64)+64)%64) + 8;
+  var m=new Uint8Array(totalLen); m.set(msg,0); m[ml]=0x80;
+  var dv=new DataView(m.buffer);
+  var bitLen=ml*8;
+  dv.setUint32(totalLen-4, bitLen>>>0, false);
+  dv.setUint32(totalLen-8, Math.floor(bitLen/4294967296)>>>0, false);
+  var h0=0x67452301,h1=0xEFCDAB89,h2=0x98BADCFE,h3=0x10325476,h4=0xC3D2E1F0;
+  var w=new Int32Array(80);
+  for(var off=0;off<totalLen;off+=64){
+    for(var i=0;i<16;i++) w[i]=dv.getInt32(off+i*4,false);
+    for(var i=16;i<80;i++){ var v=w[i-3]^w[i-8]^w[i-14]^w[i-16]; w[i]=(v<<1)|(v>>>31); }
+    var a=h0,b=h1,c=h2,d=h3,e=h4,f,k;
+    for(var i=0;i<80;i++){
+      if(i<20){ f=(b&c)|((~b)&d); k=0x5A827999; }
+      else if(i<40){ f=b^c^d; k=0x6ED9EBA1; }
+      else if(i<60){ f=(b&c)|(b&d)|(c&d); k=0x8F1BBCDC; }
+      else { f=b^c^d; k=0xCA62C1D6; }
+      var t=(((a<<5)|(a>>>27))+f+e+k+w[i])|0;
+      e=d; d=c; c=(b<<30)|(b>>>2); b=a; a=t;
+    }
+    h0=(h0+a)|0; h1=(h1+b)|0; h2=(h2+c)|0; h3=(h3+d)|0; h4=(h4+e)|0;
+  }
+  var out=new Uint8Array(20), o=new DataView(out.buffer);
+  o.setInt32(0,h0,false); o.setInt32(4,h1,false); o.setInt32(8,h2,false);
+  o.setInt32(12,h3,false); o.setInt32(16,h4,false);
+  return out;
+}
+function hmacSha1(key, msg){
+  var bs=64;
+  if(key.length>bs) key=sha1(key);
+  var k=new Uint8Array(bs); k.set(key,0);
+  var ip=new Uint8Array(bs+msg.length), op=new Uint8Array(bs+20);
+  for(var i=0;i<bs;i++){ ip[i]=k[i]^0x36; op[i]=k[i]^0x5c; }
+  ip.set(msg,bs);
+  op.set(sha1(ip),bs);
+  return sha1(op);
+}
+function pbkdf2Sha1(pw, salt, iter, dkLen){
+  var hLen=20, blocks=Math.ceil(dkLen/hLen);
+  var out=new Uint8Array(blocks*hLen), sl=salt.length;
+  var blk=new Uint8Array(sl+4); blk.set(salt,0);
+  for(var bi=1;bi<=blocks;bi++){
+    blk[sl]=(bi>>>24)&0xff; blk[sl+1]=(bi>>>16)&0xff; blk[sl+2]=(bi>>>8)&0xff; blk[sl+3]=bi&0xff;
+    var u=hmacSha1(pw, blk), t=u.slice();
+    for(var i=1;i<iter;i++){ u=hmacSha1(pw, u); for(var j=0;j<hLen;j++) t[j]^=u[j]; }
+    out.set(t,(bi-1)*hLen);
+  }
+  return out.slice(0,dkLen);
+}
+
 // Generate ~7 mutations of a base password
 function* mutations(pw){
   yield pw;
@@ -491,20 +549,16 @@ function* mutations(pw){
   yield pw+'!';
 }
 
-async function derivePMK(pw, ssid){
-  var enc=new TextEncoder();
-  var km=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']);
-  return new Uint8Array(await crypto.subtle.deriveBits(
-    {name:'PBKDF2',hash:'SHA-1',salt:enc.encode(ssid),iterations:4096},km,256));
+function derivePMK(pw, ssid){
+  return pbkdf2Sha1(utf8(pw), utf8(ssid), 4096, 32);
 }
 
-async function checkPMKID(pmk, t){
-  var label=new TextEncoder().encode("PMK Name");
+function checkPMKID(pmk, t){
+  var label=utf8("PMK Name");
   var ap=hexToBytes(t.apMac), sta=hexToBytes(t.staMac);
   var data=new Uint8Array(label.length+12);
   data.set(label,0); data.set(ap,label.length); data.set(sta,label.length+6);
-  var key=await crypto.subtle.importKey('raw',pmk,{name:'HMAC',hash:'SHA-1'},false,['sign']);
-  var sig=new Uint8Array(await crypto.subtle.sign('HMAC',key,data));
+  var sig=hmacSha1(pmk,data);
   var target=hexToBytes(t.field2);
   for(var i=0;i<16;i++) if(sig[i]!==target[i]) return false;
   return true;
@@ -515,21 +569,19 @@ function cmpBytes(a,b){
   return 0;
 }
 
-async function prf512(pmk,label,b){
-  var enc=new TextEncoder();
-  var la=enc.encode(label);
-  var key=await crypto.subtle.importKey('raw',pmk,{name:'HMAC',hash:'SHA-1'},false,['sign']);
+function prf512(pmk,label,b){
+  var la=utf8(label);
   var out=new Uint8Array(64), off=0;
   for(var i=0;off<64;i++){
     var d=new Uint8Array(la.length+1+b.length+1);
     d.set(la,0); d[la.length]=0; d.set(b,la.length+1); d[la.length+1+b.length]=i;
-    var h=new Uint8Array(await crypto.subtle.sign('HMAC',key,d));
+    var h=hmacSha1(pmk,d);
     var n=Math.min(20,64-off); out.set(h.slice(0,n),off); off+=n;
   }
   return out;
 }
 
-async function checkHandshake(pmk, t){
+function checkHandshake(pmk, t){
   var ap=hexToBytes(t.apMac), sta=hexToBytes(t.staMac);
   var aNonce=hexToBytes(t.aNonce);
   // SNonce at EAPOL byte offset 17 (32 bytes)
@@ -538,13 +590,12 @@ async function checkHandshake(pmk, t){
   var ln=cmpBytes(aNonce,sNonce)<0?aNonce:sNonce, hn=ln===aNonce?sNonce:aNonce;
   var b=new Uint8Array(76);
   b.set(lo,0); b.set(hi,6); b.set(ln,12); b.set(hn,44);
-  var ptk=await prf512(pmk,"Pairwise key expansion",b);
+  var ptk=prf512(pmk,"Pairwise key expansion",b);
   var kck=ptk.slice(0,16);
   // Zero MIC field (bytes 81-96) in EAPOL frame before verifying
   var eb=hexToBytes(t.eapol);
   for(var i=81;i<97;i++) eb[i]=0;
-  var kckKey=await crypto.subtle.importKey('raw',kck,{name:'HMAC',hash:'SHA-1'},false,['sign']);
-  var mic=new Uint8Array(await crypto.subtle.sign('HMAC',kckKey,eb));
+  var mic=hmacSha1(kck,eb);
   var target=hexToBytes(t.field2);
   for(var i=0;i<16;i++) if(mic[i]!==target[i]) return false;
   return true;
@@ -555,8 +606,8 @@ async function tryBatch(pws){
     if(found) return;
     tried++;
     for(var t of targets){
-      var pmk=await derivePMK(pw,t.ssid);
-      var hit=(t.type==='01') ? await checkPMKID(pmk,t) : await checkHandshake(pmk,t);
+      var pmk=derivePMK(pw,t.ssid);
+      var hit=(t.type==='01') ? checkPMKID(pmk,t) : checkHandshake(pmk,t);
       if(hit){
         found=true;
         postMessage({type:'found',password:pw,ssid:t.ssid});
