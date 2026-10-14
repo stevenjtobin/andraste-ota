@@ -2,6 +2,7 @@
   "version": "2026-10-13.be62578",
   "base": "https://raw.githubusercontent.com/stevenjtobin/andraste-ota/main/",
   "files": [
+    { "sd": "/andraste/coventina/blocklist.txt", "src": "coventina/blocklist.txt", "size": 2828, "sha": "5f15d415544a312e" },
     { "sd": "/andraste/media/cheese.gif", "src": "cheese.gif", "size": 37550, "sha": "8084524ccce2c490" },
     { "sd": "/andraste/portal/chef.html", "src": "chef.html", "size": 41653, "sha": "8839ea1a0f128149" },
     { "sd": "/andraste/portal/delivery.html", "src": "delivery.html", "size": 6570, "sha": "30bb8c2e3de14ad6" },
@@ -40,7 +41,6 @@
     { "sd": "/andraste/portal/oauth/apple.html", "src": "oauth/apple.html", "size": 5385, "sha": "cc94ab57fd43a4e8" },
     { "sd": "/andraste/portal/oauth/facebook.html", "src": "oauth/facebook.html", "size": 4877, "sha": "50e46d479bc5b96e" },
     { "sd": "/andraste/portal/oauth/google.html", "src": "oauth/google.html", "size": 6191, "sha": "2750d5b67370ba12" },
-    { "sd": "/andraste/password-lists/berserker-2million-passwords.txt", "src": "password-lists/berserker-2million-passwords.txt", "size": 21243946, "sha": "c5acd62a86353454" },
     { "sd": "/andraste/media/rickroll.gif", "src": "rickroll.gif", "size": 10037, "sha": "1eee6b0ef1a0d906" },
     { "sd": "/andraste/media/rickroll.mp3", "src": "rickroll.mp3", "size": 3876430, "sha": "3a138e92ff70b10e" },
     { "sd": "/andraste/media/rickroll.mp4", "src": "rickroll.mp4", "size": 344095, "sha": "cd8f1fc5cb478949" },

@@ -1,0 +1,148 @@
+# Coventina blocklist — curated top ad / tracker / telemetry domains.
+# Syncs to SD at /andraste/coventina/blocklist.txt (via SD Setup).
+# One domain per line. Lines starting with # or ! are comments. www. and leading *. are stripped.
+# Coventina blocks a domain AND its subdomains, so "doubleclick.net" also covers "ad.doubleclick.net".
+# Add your own domains at the bottom (or edit this file on the card via the WebUI file manager).
+
+# ---- Google / DoubleClick ads ----
+doubleclick.net
+googlesyndication.com
+googleadservices.com
+googletagservices.com
+googletagmanager.com
+google-analytics.com
+analytics.google.com
+adservice.google.com
+pagead2.googlesyndication.com
+partner.googleadservices.com
+pubads.g.doubleclick.net
+securepubads.g.doubleclick.net
+ad.doubleclick.net
+stats.g.doubleclick.net
+adsense.google.com
+admob.com
+app-measurement.com
+crashlytics.com
+firebase-settings.crashlytics.com
+
+# ---- Meta / Facebook trackers ----
+connect.facebook.net
+pixel.facebook.com
+an.facebook.com
+graph.facebook.com
+ads.facebook.com
+business.facebook.com
+analytics.facebook.com
+
+# ---- Amazon ads ----
+amazon-adsystem.com
+aax.amazon-adsystem.com
+c.amazon-adsystem.com
+mads.amazon-adsystem.com
+fls-na.amazon.com
+
+# ---- Major ad networks / exchanges ----
+adnxs.com
+appnexus.com
+pubmatic.com
+rubiconproject.com
+criteo.com
+criteo.net
+casalemedia.com
+openx.net
+smartadserver.com
+adform.net
+taboola.com
+outbrain.com
+taboolasyndication.com
+media.net
+contextweb.com
+3lift.com
+sharethrough.com
+indexww.com
+bidswitch.net
+adroll.com
+districtm.io
+gumgum.com
+yieldmo.com
+teads.tv
+spotxchange.com
+spotx.tv
+adcolony.com
+mopub.com
+inmobi.com
+smaato.net
+applovin.com
+vungle.com
+chartboost.com
+unityads.unity3d.com
+adtng.com
+moatads.com
+scorecardresearch.com
+zedo.com
+revcontent.com
+mgid.com
+propellerads.com
+popads.net
+onclickads.net
+exoclick.com
+juicyads.com
+trafficjunky.net
+
+# ---- Analytics / tracking ----
+quantserve.com
+quantcount.com
+hotjar.com
+mixpanel.com
+segment.com
+segment.io
+amplitude.com
+heapanalytics.com
+chartbeat.com
+chartbeat.net
+newrelic.com
+nr-data.net
+optimizely.com
+crazyegg.com
+mouseflow.com
+fullstory.com
+clarity.ms
+matomo.cloud
+statcounter.com
+yandex.ru
+mc.yandex.ru
+hs-analytics.net
+hubspot.com
+branch.io
+app.adjust.com
+adjust.com
+kochava.com
+appsflyer.com
+bugsnag.com
+sentry.io
+mparticle.com
+
+# ---- Microsoft / Windows telemetry ----
+vortex.data.microsoft.com
+telemetry.microsoft.com
+watson.telemetry.microsoft.com
+settings-win.data.microsoft.com
+browser.events.data.microsoft.com
+telemetry.urs.microsoft.com
+
+# ---- Apple / Samsung / device telemetry ----
+iadsdk.apple.com
+metrics.apple.com
+ads.samsungads.com
+samsungacr.com
+smetrics.samsung.com
+
+# ---- Smart-TV / Roku / misc trackers ----
+logs.roku.com
+scribe.logs.roku.com
+cooper.logs.roku.com
+samba.tv
+tvinteractive.tv
+adrise.tv
+
+# ---- Your own additions below ----
