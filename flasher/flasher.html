@@ -161,16 +161,23 @@
     <!-- ===== Step 4: Flash ===== -->
     <div class="card hidden" id="cardFlash">
       <h2><span class="n">4</span>Flash firmware</h2>
-      <p class="hint">Writes the four firmware images from <code>manifest.json</code> at their
-        correct offsets, then reboots the board. Your SD card is never touched.</p>
-      <label class="bundle" style="cursor:pointer" for="fullErase">
-        <input type="checkbox" id="fullErase">
-        <div>
-          <div class="nm">Full chip erase (optional)</div>
-          <div class="ds">Wipes saved on-device settings (NVS: timezone, allowlists, etc.) before writing.
-            Leave <b>off</b> for a normal update that keeps your settings.</div>
-        </div>
-      </label>
+      <p class="hint">Flashes Andraste to the board, then reboots it. Your SD card is never touched.</p>
+      <div class="bundle" style="flex-direction:column; gap:10px; align-items:stretch">
+        <label style="cursor:pointer; display:flex; gap:10px; align-items:flex-start">
+          <input type="radio" name="flashMode" id="modeUpdate" value="update" checked
+                 style="width:20px;height:20px;margin-top:2px;accent-color:var(--gold)">
+          <div><div class="nm">Update &mdash; keep my WiFi &amp; settings <span style="color:var(--green)">(recommended)</span></div>
+            <div class="ds">Writes only the app. Your WiFi, timezone, allowlists and saved settings stay
+              intact. Use this to upgrade a board already running Andraste.</div></div>
+        </label>
+        <label style="cursor:pointer; display:flex; gap:10px; align-items:flex-start">
+          <input type="radio" name="flashMode" id="modeClean" value="clean"
+                 style="width:20px;height:20px;margin-top:2px;accent-color:var(--gold)">
+          <div><div class="nm">Clean install &mdash; new / blank board</div>
+            <div class="ds" style="color:#e05a5a"><b>Erases everything</b> (bootloader, partitions, and all
+              saved settings incl. WiFi), then writes fresh firmware. Only for a brand-new or non-Andraste board.</div></div>
+        </label>
+      </div>
       <div class="btn-row" style="margin-top:6px">
         <button class="btn go" id="btnFlash">Flash Andraste</button>
       </div>
@@ -579,12 +586,21 @@
         if (!build || !build.parts) throw new Error("manifest has no builds[0].parts");
         const manifestBase = new URL(MANIFEST_URL, location.href);
 
+        // Flash mode: UPDATE writes only the app (offset >= 0x10000), leaving the bootloader,
+        // partition table and NVS (WiFi/settings) untouched. CLEAN writes everything + erases.
+        const mode = (document.querySelector('input[name="flashMode"]:checked') || {}).value || "update";
+        const selParts = (mode === "clean") ? build.parts
+                                            : build.parts.filter(p => p.offset >= 0x10000);
+        if (!selParts.length) throw new Error("no app image found in manifest");
+        log(mode === "clean" ? "Mode: CLEAN INSTALL (erases WiFi + all settings)"
+                             : "Mode: UPDATE (app only — keeps WiFi + settings)");
+
         // Fetch each .bin and convert to the Latin1 "binary string" esptool-js expects
         // (writeFlash reads each fileArray[i].data as a string and maps charCodeAt -> byte).
         const fileArray = [];
         const cumBefore = [];     // bytes written before each file (for the overall bar)
         let grandTotal = 0;
-        for (const part of build.parts) {
+        for (const part of selParts) {
           const url = new URL(part.path, manifestBase);
           log(`Fetching ${part.path} @ 0x${part.offset.toString(16)}…`);
           const data = await fetchBinaryString(url);
@@ -605,13 +621,13 @@
         await loader.writeFlash({
           fileArray,
           flashSize: "keep",
-          eraseAll: $("fullErase").checked,
+          eraseAll: (mode === "clean"),
           compress: true,
           // esptool-js calls this per-part: (fileIndex, bytesWritten, fileTotal).
           reportProgress: (fileIndex, written, total) => {
             const overall = cumBefore[fileIndex] + written;
             setProgress(overall / grandTotal);
-            if (written === 0) log(`Writing ${build.parts[fileIndex].path}…`);
+            if (written === 0) log(`Writing ${selParts[fileIndex].path}…`);
           },
           // calculateMD5Hash is optional (post-flash verify). Omitted to avoid bundling an
           // MD5 implementation; esptool-js still verifies the compressed transfer end-to-end.
@@ -655,11 +671,17 @@
     function showDone() {
       hide("cardFlash");
       show("cardDone");
-      const picked = BUNDLES.filter(b => state.bundles.has(b.id));
-      $("doneBundles").innerHTML = picked.length
-        ? `<p class="hint" style="margin-top:12px">In <b>SD Setup</b>, grab the bundles you chose:</p>
-           <ul class="tight">${picked.map(b => `<li><b>${esc(b.name)}</b> — ${esc(b.desc)}</li>`).join("")}</ul>`
-        : `<p class="hint" style="margin-top:12px;color:var(--warn)">No SD bundles were selected (or no card is present).</p>`;
+      // Show the FULL catalog of what SD Setup can fetch, so the user knows what's available.
+      // (The browser can't drive the device's download; SD Setup runs on the board.)
+      const rows = BUNDLES.map(b => `
+        <div class="bundle"><div>
+          <div class="nm">${esc(b.name)}</div>
+          <div class="ds">${esc(b.desc)}</div>
+        </div></div>`).join("");
+      $("doneBundles").innerHTML =
+        `<p class="hint" style="margin-top:14px"><b>Available to download over WiFi.</b> On the board,
+           open <b>System &rarr; SD Setup</b> and run it &mdash; it pulls these to the SD card:</p>
+         <div style="margin-top:8px">${rows}</div>`;
       $("cardDone").scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
