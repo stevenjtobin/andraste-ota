@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flash Andraste</title>
+  <style>
+    /* ---------------------------------------------------------------------
+       Andraste enhanced flasher — Iceni/Celtic-gold on near-black, matching
+       web/index.html's palette (gold #d8a54a on #06120c) with green accents.
+       All styling is inline so this page is fully self-contained; the only
+       external resource loaded is esptool-js from a pinned CDN (see bottom).
+       --------------------------------------------------------------------- */
+    :root {
+      --bg:    #06120c;   /* near-black green */
+      --panel: #0a1a11;   /* card background (same as index.html) */
+      --panel2:#0d2016;   /* inset / code background */
+      --fg:    #cfe6d6;   /* body text */
+      --muted: #6f8a78;   /* secondary text */
+      --gold:  #d8a54a;   /* primary brand / headings / buttons */
+      --green: #46c37a;   /* success / "go" accent */
+      --warn:  #e0b84a;   /* caution */
+      --bad:   #e0695a;   /* error / no-SD */
+      --line:  #163826;   /* borders */
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin:0; background:var(--bg); color:var(--fg);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      line-height:1.6; padding:32px 16px 64px;
+    }
+    .wrap { max-width:680px; margin:0 auto; }
+
+    /* Header */
+    header { display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+    header svg { flex:0 0 auto; }
+    h1 { color:var(--gold); letter-spacing:5px; margin:0; font-size:30px; }
+    .sub { color:var(--muted); margin:2px 0 0; }
+
+    /* Cards */
+    .card {
+      border:1px solid var(--line); border-radius:12px; padding:22px;
+      margin:20px 0; background:var(--panel);
+    }
+    .card h2 { margin:0 0 4px; color:var(--gold); font-size:18px; letter-spacing:1px; }
+    .card h2 .n {
+      display:inline-grid; place-items:center; width:24px; height:24px; margin-right:8px;
+      border-radius:50%; background:var(--panel2); border:1px solid var(--gold);
+      color:var(--gold); font-size:13px; vertical-align:middle;
+    }
+    .card .hint { color:var(--muted); font-size:14px; margin:0 0 14px; }
+
+    /* Buttons */
+    .btn {
+      font-size:16px; padding:13px 26px; border:0; border-radius:9px; cursor:pointer;
+      background:var(--gold); color:#06120c; font-weight:700; letter-spacing:.3px;
+    }
+    .btn:disabled { opacity:.45; cursor:not-allowed; }
+    .btn.ghost { background:transparent; color:var(--gold); border:1px solid var(--gold); font-weight:600; }
+    .btn.go { background:var(--green); color:#04140b; }
+    .btn.danger { background:transparent; color:var(--bad); border:1px solid var(--bad); font-weight:600; }
+    .btn-row { display:flex; flex-wrap:wrap; gap:10px; }
+
+    /* Detection result lines */
+    .result { margin:0; padding:0; list-style:none; }
+    .result li { display:flex; gap:10px; align-items:flex-start; padding:7px 0; border-top:1px solid var(--line); }
+    .result li:first-child { border-top:0; }
+    .result .dot { flex:0 0 auto; width:10px; height:10px; border-radius:50%; margin-top:8px; background:var(--muted); }
+    .result .dot.ok { background:var(--green); }
+    .result .dot.warn { background:var(--warn); }
+    .result .dot.bad { background:var(--bad); }
+    .result .k { color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:1px; }
+    .result .v { color:var(--fg); }
+
+    /* SD bundle checklist */
+    .note {
+      background:var(--panel2); border-left:3px solid var(--gold); border-radius:6px;
+      padding:11px 14px; font-size:14px; color:var(--fg); margin:4px 0 16px;
+    }
+    .bundle { display:flex; gap:12px; align-items:flex-start; padding:12px; border:1px solid var(--line);
+              border-radius:9px; margin:9px 0; background:var(--panel2); cursor:pointer; }
+    .bundle input { width:20px; height:20px; margin-top:3px; accent-color:var(--gold); flex:0 0 auto; }
+    .bundle .nm { color:var(--gold); font-weight:600; }
+    .bundle .ds { color:var(--muted); font-size:14px; }
+
+    /* Progress + log */
+    .progress { height:16px; background:var(--panel2); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+    .progress > span { display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--gold),var(--green)); transition:width .15s; }
+    .pct { text-align:center; color:var(--muted); font-size:13px; margin:6px 0 0; }
+    .log {
+      margin:14px 0 0; background:#040d08; border:1px solid var(--line); border-radius:8px;
+      padding:10px 12px; height:150px; overflow:auto; white-space:pre-wrap; word-break:break-word;
+      font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; color:#9fcaad;
+    }
+
+    /* Misc */
+    code { background:var(--panel2); padding:2px 6px; border-radius:4px; color:var(--gold); font-size:13px; }
+    a { color:var(--gold); }
+    .foot { color:#5f7a68; font-size:13px; margin-top:30px; text-align:center; }
+    .hidden { display:none !important; }
+    .spinner { display:inline-block; width:16px; height:16px; border:2px solid var(--line);
+               border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; vertical-align:-3px; margin-right:8px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    ul.tight { margin:8px 0 0; padding-left:20px; } ul.tight li { margin:5px 0; }
+    .warnrow { color:var(--warn); font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header>
+      <!-- Lightweight Celtic torc flourish (inline SVG, no external asset). -->
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="22" r="13" fill="none" stroke="#d8a54a" stroke-width="3" stroke-dasharray="58 14"/>
+        <circle cx="13.5" cy="12.5" r="3.2" fill="#d8a54a"/>
+        <circle cx="26.5" cy="12.5" r="3.2" fill="#d8a54a"/>
+      </svg>
+      <div>
+        <h1>ANDRASTE</h1>
+        <p class="sub">USB firmware flasher for the Cheap Yellow Display &mdash; with device &amp; SD detection.</p>
+      </div>
+    </header>
+
+    <!-- ===== Browser-unsupported gate (shown only when Web Serial is missing) ===== -->
+    <div class="card hidden" id="unsupported">
+      <h2>Your browser can&rsquo;t flash over USB</h2>
+      <p class="hint">Flashing uses the <b>Web Serial API</b>, which only works in
+        <b>desktop Chrome or Edge</b> over HTTPS (or <code>localhost</code>).
+        Safari, Firefox, and phones/tablets (iOS/Android) can&rsquo;t do it.</p>
+      <p>Open this page on a desktop in Chrome or Edge, plug in the board with a
+        <b>data</b> USB cable, and try again.</p>
+    </div>
+
+    <!-- ===== Step 1: Connect ===== -->
+    <div class="card" id="cardConnect">
+      <h2><span class="n">1</span>Connect your board</h2>
+      <p class="hint">Plug the CYD in with a USB cable that carries <b>data</b> (not charge-only),
+        then connect. We&rsquo;ll pick up its serial port and read what&rsquo;s on it.</p>
+      <div class="btn-row">
+        <button class="btn" id="btnConnect">Connect device</button>
+      </div>
+      <p class="pct" id="flashVer" style="text-align:left">This page flashes Andraste &mdash;</p>
+    </div>
+
+    <!-- ===== Step 2: Detection ===== -->
+    <div class="card hidden" id="cardDetect">
+      <h2><span class="n">2</span>What we found</h2>
+      <div id="detectBusy" class="hint"><span class="spinner"></span>Resetting the board and listening for its boot banner (~6s)&hellip;</div>
+      <ul class="result hidden" id="detectResult"></ul>
+      <div class="btn-row hidden" id="detectRetryRow" style="margin-top:12px">
+        <button class="btn ghost" id="btnRedetect">Re-read the device</button>
+      </div>
+    </div>
+
+    <!-- ===== Step 3: SD-aware picker (populated by JS depending on SD status) ===== -->
+    <div class="card hidden" id="cardPicker">
+      <h2><span class="n">3</span>SD card contents</h2>
+      <div id="pickerBody"></div>
+    </div>
+
+    <!-- ===== Step 4: Flash ===== -->
+    <div class="card hidden" id="cardFlash">
+      <h2><span class="n">4</span>Flash firmware</h2>
+      <p class="hint">Writes the four firmware images from <code>manifest.json</code> at their
+        correct offsets, then reboots the board. Your SD card is never touched.</p>
+      <label class="bundle" style="cursor:pointer" for="fullErase">
+        <input type="checkbox" id="fullErase">
+        <div>
+          <div class="nm">Full chip erase (optional)</div>
+          <div class="ds">Wipes saved on-device settings (NVS: timezone, allowlists, etc.) before writing.
+            Leave <b>off</b> for a normal update that keeps your settings.</div>
+        </div>
+      </label>
+      <div class="btn-row" style="margin-top:6px">
+        <button class="btn go" id="btnFlash">Flash Andraste</button>
+      </div>
+      <div class="hidden" id="flashProgressWrap" style="margin-top:16px">
+        <div class="progress"><span id="progressBar"></span></div>
+        <p class="pct" id="progressPct">0%</p>
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+
+    <!-- ===== Done ===== -->
+    <div class="card hidden" id="cardDone">
+      <h2 style="color:var(--green)">Done! Andraste is flashed.</h2>
+      <p>Reboot (it did that automatically), join the board to WiFi, then open
+        <b>System &rarr; SD Setup</b> on the device to download your selected files over WiFi.</p>
+      <div id="doneBundles"></div>
+    </div>
+
+    <p class="foot">Andraste &mdash; Iceni-themed ESP32 security tool. Flashed in-browser with
+      <a href="https://github.com/espressif/esptool-js" target="_blank" rel="noopener">esptool-js</a> + Web Serial.</p>
+  </div>
+
+  <!-- esptool-js: pinned version. bundle.js is an ES module exporting ESPLoader + Transport
+       (verified against esptool-js@0.5.4). This is the ONLY external resource on the page. -->
+  <script type="module">
+    import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@0.5.4/bundle.js";
+
+    /* =====================================================================
+       CONFIG
+       ===================================================================== */
+    const MANIFEST_URL     = "./manifest.json"; // reuse the SAME manifest as index.html (paths + offsets)
+    const BAUD             = 115200;            // CYD USB-serial (CP210x/CH340) default
+    const DETECT_WINDOW_MS = 6000;              // how long to listen for the boot banner
+
+    /* The five downloadable SD asset bundles. These are NOT written by the browser —
+       they are pulled by the device's "SD Setup" tool over WiFi after flashing. This
+       checklist only records the user's intent and reminds them at the end.
+       `on` = checked by default (wordlists are large, so default them off). */
+    const BUNDLES = [
+      { id:"coventina", name:"Coventina blocklist",            on:true,
+        desc:"ad/tracker blocklist so the on-device Pi-hole actually blocks ads." },
+      { id:"portal",    name:"Portal pages",                   on:true,
+        desc:"the captive-portal / evil-portal templates for awareness testing." },
+      { id:"websmith",  name:"WebSmith cracker (chef.html)",   on:true,
+        desc:"the in-browser WPA password-cracker page." },
+      { id:"wordlists", name:"Password wordlists",             on:false,
+        desc:"wordlists for on-device/WebSmith password cracking (large)." },
+      { id:"media",     name:"Media & art",                    on:true,
+        desc:"screensaver art, SAW-portal media, brand logos." },
+    ];
+
+    /* =====================================================================
+       STATE
+       ===================================================================== */
+    const state = {
+      manifest: null,       // parsed manifest.json
+      port:     null,       // the chosen SerialPort (granted once, reused throughout)
+      fw:       null,       // Andraste version string parsed from the banner, or null
+      isCyd:    false,      // true if the banner said ESP32 CYD (ESP32-2432S028R)
+      boardText:null,       // raw board text from an Andraste banner (non-CYD fallback)
+      chip:     null,       // esptool-js chip description (used only when there's no banner)
+      sd:       "unknown",  // "present" | "absent" | "unknown"
+      sdSize:   null,       // MB, from the [sd] banner line
+      sdFree:   null,       // MB
+      bundles:  new Set(),  // selected bundle ids
+      busy:     false,
+    };
+
+    /* =====================================================================
+       Tiny DOM + util helpers
+       ===================================================================== */
+    const $ = (id) => document.getElementById(id);
+    const show = (id) => $(id).classList.remove("hidden");
+    const hide = (id) => $(id).classList.add("hidden");
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+    function log(msg) {
+      const el = $("log");
+      el.textContent += (msg.endsWith("\n") ? msg : msg + "\n");
+      el.scrollTop = el.scrollHeight;
+    }
+    // esptool-js writes connection/flash chatter through this terminal object.
+    const espTerminal = {
+      clean() { $("log").textContent = ""; },
+      writeLine(data) { log(data); },
+      write(data)     { const el = $("log"); el.textContent += data; el.scrollTop = el.scrollHeight; },
+    };
+
+    /* =====================================================================
+       BOOT: check Web Serial support, load the manifest, wire up buttons
+       ===================================================================== */
+    (async function boot() {
+      // Web Serial is required. file:// and http:// (non-localhost) are not secure
+      // contexts, so navigator.serial will be undefined there too — same message.
+      if (!("serial" in navigator)) {
+        hide("cardConnect");
+        show("unsupported");
+        return;
+      }
+      // Load the manifest up front so we can show the version and, later, flash its parts.
+      try {
+        state.manifest = await (await fetch(MANIFEST_URL, { cache: "no-store" })).json();
+        $("flashVer").textContent = "This page flashes Andraste v" + (state.manifest.version || "—");
+      } catch (e) {
+        $("flashVer").textContent = "Could not load manifest.json — flashing will fail.";
+      }
+
+      $("btnConnect").addEventListener("click", onConnect);
+      $("btnRedetect").addEventListener("click", () => runDetection());
+      $("btnFlash").addEventListener("click", onFlash);
+    })();
+
+    /* =====================================================================
+       STEP 1 -> 2: Connect, then auto-detect
+       ===================================================================== */
+    async function onConnect() {
+      if (state.busy) return;
+      try {
+        // requestPort() must be called from a user gesture (this click). The user
+        // picks the board's serial port (CP210x / CH340) in the browser dialog.
+        state.port = await navigator.serial.requestPort();
+      } catch (e) {
+        // The user cancelled the port picker — nothing to do, stay on step 1.
+        return;
+      }
+      show("cardDetect");
+      await runDetection();
+    }
+
+    /* Detection pipeline. Also re-runnable via the "Re-read" / "I inserted one" buttons. */
+    async function runDetection() {
+      if (state.busy) return;
+      state.busy = true;
+      $("btnConnect").disabled = true;
+      $("btnRedetect").disabled = true;
+      // Reset the step-2 card to its "working" look and hide downstream steps.
+      show("cardDetect"); show("detectBusy");
+      hide("detectResult"); hide("detectRetryRow");
+      hide("cardPicker"); hide("cardFlash"); hide("cardDone");
+
+      try {
+        const text = await readBootBanner();   // phase 1: our own serial read
+        parseBanner(text);                      // fill state.fw / isCyd / sd / sizes
+        if (!state.fw) {
+          // No Andraste banner at all -> ask the ROM bootloader for the chip name.
+          await fallbackChipDetect();           // sets state.chip; SD stays "unknown"
+        }
+      } catch (e) {
+        log("Detection error: " + (e.message || e));
+        // Make sure the port is closed so the flash step can reopen it cleanly.
+        try { await state.port.close(); } catch (_) {}
+      }
+
+      renderDetection();
+      renderPicker();
+      hide("detectBusy"); show("detectResult"); show("detectRetryRow");
+      state.busy = false;
+      $("btnConnect").disabled = false;
+      $("btnRedetect").disabled = false;
+    }
+
+    /* ---------------------------------------------------------------------
+       PHASE 1 — read the firmware boot banner over plain serial.
+       We open the port ourselves, pulse a NORMAL-boot reset (not bootloader),
+       read for up to ~6s, then close the port again so esptool-js can reopen it.
+       --------------------------------------------------------------------- */
+    async function readBootBanner() {
+      // The port may already be open from a previous detect run; ignore errors closing.
+      try { await state.port.close(); } catch (_) {}
+      await state.port.open({ baudRate: BAUD });
+
+      // Reset into NORMAL boot so the firmware runs and prints its banner.
+      // ESP32 auto-reset convention (esptool): RTS -> EN (reset), DTR -> IO0 (boot mode).
+      //   requestToSend=true  asserts RTS -> pulls EN low  -> chip held in reset
+      //   dataTerminalReady=false leaves IO0 high          -> boots the app (NOT the ROM loader)
+      // ASSUMPTION: standard ESP32 auto-reset wiring; verify on real CYD hardware.
+      await state.port.setSignals({ dataTerminalReady: false, requestToSend: true });
+      await sleep(120);
+      await state.port.setSignals({ dataTerminalReady: false, requestToSend: false }); // release EN -> boots
+
+      const reader  = state.port.readable.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      let graceTimer = null;
+      // Hard cap: cancel the reader after the full window so we never hang.
+      const capTimer = setTimeout(() => reader.cancel().catch(() => {}), DETECT_WINDOW_MS);
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;                       // cancelled (timeout/early-exit) or port closed
+          if (value && value.length) {
+            buf += decoder.decode(value, { stream: true });
+            const haveBanner = /Andraste\s+\S+\s+on\s+/.test(buf);
+            const haveSd     = /\[sd\]\s+present=/.test(buf);
+            if (haveBanner && haveSd) {
+              reader.cancel().catch(() => {});   // got everything -> stop early
+            } else if (haveBanner && !graceTimer) {
+              // Banner seen but no [sd] line yet. Older firmware may never print one,
+              // so wait a short grace period for it, then stop regardless.
+              graceTimer = setTimeout(() => reader.cancel().catch(() => {}), 1200);
+            }
+          }
+        }
+      } finally {
+        clearTimeout(capTimer);
+        if (graceTimer) clearTimeout(graceTimer);
+        try { reader.releaseLock(); } catch (_) {}
+        try { await state.port.close(); } catch (_) {}  // hand the port back for flashing
+      }
+      return buf;
+    }
+
+    /* Parse both banner lines out of the captured serial text.
+         "Andraste 0.7.26 on ESP32 CYD (ESP32-2432S028R)"   (main.cpp boot banner)
+         "[sd] present=1 size=15192 free=14980"             (added separately; may be absent) */
+    function parseBanner(text) {
+      // Reset detection fields (re-check safe).
+      state.fw = null; state.isCyd = false; state.boardText = null;
+      state.sd = "unknown"; state.sdSize = null; state.sdFree = null; state.chip = null;
+
+      const cyd = text.match(/Andraste\s+(\S+)\s+on\s+(ESP32 CYD \(ESP32-2432S028R\))/);
+      if (cyd) {
+        state.fw = cyd[1]; state.isCyd = true; state.boardText = cyd[2];
+      } else {
+        // Andraste banner but a different board string (loose fallback).
+        const any = text.match(/Andraste\s+(\S+)\s+on\s+(.+)/);
+        if (any) { state.fw = any[1]; state.boardText = any[2].trim(); }
+      }
+
+      // The [sd] line is optional (older firmware won't have it yet).
+      const sd = text.match(/\[sd\]\s+present=([01])\s+size=(\d+)\s+free=(\d+)/);
+      if (sd) {
+        state.sd     = sd[1] === "1" ? "present" : "absent";
+        state.sdSize = parseInt(sd[2], 10);
+        state.sdFree = parseInt(sd[3], 10);
+      }
+      // If we saw an Andraste banner but no [sd] line, SD stays "unknown" (degrade gracefully).
+    }
+
+    /* ---------------------------------------------------------------------
+       FALLBACK — no Andraste banner. Use esptool-js to read the chip name.
+       main() resets the chip into the ROM bootloader, detects it, and returns
+       a chip description string. We disconnect afterward so the picker UI can
+       sit idle without holding the port open; the flash step reconnects fresh.
+       --------------------------------------------------------------------- */
+    async function fallbackChipDetect() {
+      state.sd = "unknown";
+      let transport = null;
+      try {
+        log("No Andraste banner seen — asking the ROM bootloader which chip this is…");
+        transport = new Transport(state.port, false);         // (device, tracing)
+        const loader = new ESPLoader({ transport, baudrate: BAUD, terminal: espTerminal });
+        state.chip = await loader.main();                     // connect + detect + return description
+        log("Detected chip: " + state.chip);
+      } catch (e) {
+        state.chip = null;
+        log("Chip detection failed: " + (e.message || e));
+      } finally {
+        // Release the port either way so the flash step can reopen it.
+        try { if (transport) await transport.disconnect(); else await state.port.close(); } catch (_) {}
+      }
+    }
+
+    /* =====================================================================
+       Render the step-2 result lines
+       ===================================================================== */
+    function renderDetection() {
+      const rows = [];
+
+      // --- Device line ---
+      if (state.isCyd) {
+        rows.push(["ok", "Device", `Cheap Yellow Display (ESP32) — firmware <b>${esc(state.fw)}</b> detected`]);
+      } else if (state.fw) {
+        rows.push(["warn", "Device", `Andraste <b>${esc(state.fw)}</b> on ${esc(state.boardText || "an unrecognised board")}`]);
+      } else if (state.chip) {
+        rows.push(["warn", "Device", `${esc(state.chip)} detected — no Andraste banner (blank or other firmware)`]);
+      } else {
+        rows.push(["bad", "Device", "Couldn't read a boot banner or a chip ID. The board may be in the wrong mode — try re-reading."]);
+      }
+
+      // --- SD line ---
+      if (state.sd === "present") {
+        const size = fmtMB(state.sdSize), free = fmtMB(state.sdFree);
+        rows.push(["ok", "SD card", `${size} detected (${free} free)`]);
+      } else if (state.sd === "absent") {
+        rows.push(["bad", "SD card", "No SD card in the device"]);
+      } else {
+        rows.push(["warn", "SD card", "Status unknown — couldn't read the card"]);
+      }
+
+      $("detectResult").innerHTML = rows.map(([cls, k, v]) =>
+        `<li><span class="dot ${cls}"></span><div><div class="k">${k}</div><div class="v">${v}</div></div></li>`
+      ).join("");
+    }
+
+    /* =====================================================================
+       STEP 3 — SD-aware picker. Branches on state.sd.
+       ===================================================================== */
+    function renderPicker() {
+      show("cardPicker");
+      hide("cardFlash"); hide("cardDone");
+      const body = $("pickerBody");
+
+      if (state.sd === "present") {
+        body.innerHTML = bundlesHtml();
+        wireBundles();
+        revealFlash();
+      } else if (state.sd === "absent") {
+        body.innerHTML = noSdHtml();
+        wireNoSd();
+        // Flash card stays hidden until the user clicks "Flash anyway".
+      } else {
+        // UNKNOWN — ask whether an SD is inserted.
+        body.innerHTML = unknownHtml();
+        $("btnUnknownYes").addEventListener("click", () => {
+          body.innerHTML = bundlesHtml();
+          wireBundles();
+          revealFlash();
+        });
+        $("btnUnknownNo").addEventListener("click", () => {
+          body.innerHTML = noSdHtml();
+          wireNoSd();
+        });
+      }
+    }
+
+    // --- The 5-item bundle checklist (SD present, or user confirmed one is in) ---
+    function bundlesHtml() {
+      state.bundles = new Set(BUNDLES.filter(b => b.on).map(b => b.id)); // seed defaults
+      const items = BUNDLES.map(b => `
+        <label class="bundle" for="bundle_${b.id}">
+          <input type="checkbox" id="bundle_${b.id}" data-id="${b.id}" ${b.on ? "checked" : ""}>
+          <div><div class="nm">${esc(b.name)}</div><div class="ds">${esc(b.desc)}</div></div>
+        </label>`).join("");
+      return `
+        <p class="hint">Tick the file bundles you want on the card. The browser can&rsquo;t write
+          the SD directly &mdash; these are <b>downloaded by the device&rsquo;s &ldquo;SD Setup&rdquo; tool over WiFi
+          after flashing</b>. This just records your choice.</p>
+        ${items}
+        <div class="note">After flashing: join WiFi on the device, then open
+          <b>System &rarr; SD Setup</b> to pull everything you ticked.</div>`;
+    }
+    function wireBundles() {
+      document.querySelectorAll('#pickerBody input[type="checkbox"][data-id]').forEach(cb => {
+        cb.addEventListener("change", () => {
+          if (cb.checked) state.bundles.add(cb.dataset.id);
+          else state.bundles.delete(cb.dataset.id);
+        });
+      });
+    }
+
+    // --- No SD panel: explain what's lost, offer flash-anyway + re-check ---
+    function noSdHtml() {
+      state.bundles = new Set(); // nothing can be stored without a card
+      return `
+        <div class="note" style="border-left-color:var(--bad)">
+          <b>No SD card detected.</b> You can still flash, but without a card you lose:
+          saved captures, the WPA cracker, portals, NFC dumps, logging, and ad-blocking.
+          Insert a <b>microSD (FAT32)</b> for the full toolkit.
+        </div>
+        <div class="btn-row">
+          <button class="btn ghost" id="btnReinsert">I inserted one — re-check</button>
+          <button class="btn danger" id="btnFlashAnyway">Flash anyway</button>
+        </div>`;
+    }
+    function wireNoSd() {
+      $("btnReinsert").addEventListener("click", () => runDetection());
+      $("btnFlashAnyway").addEventListener("click", () => revealFlash());
+    }
+
+    // --- Unknown panel: couldn't read the card ---
+    function unknownHtml() {
+      return `
+        <div class="note">
+          Couldn&rsquo;t read the card (the device may not be running Andraste yet).
+          Do you have an SD inserted?
+        </div>
+        <div class="btn-row">
+          <button class="btn ghost" id="btnUnknownYes">Yes, continue</button>
+          <button class="btn danger" id="btnUnknownNo">No — show benefits</button>
+        </div>`;
+    }
+
+    function revealFlash() {
+      show("cardFlash");
+      $("cardFlash").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    /* =====================================================================
+       STEP 4 — Flash with esptool-js using the manifest's parts + offsets.
+       ===================================================================== */
+    async function onFlash() {
+      if (state.busy) return;
+      if (!state.manifest) { alert("manifest.json didn't load — cannot flash."); return; }
+      state.busy = true;
+      $("btnFlash").disabled = true;
+      $("btnRedetect").disabled = true;
+      show("flashProgressWrap");
+      $("log").textContent = "";
+      setProgress(0);
+
+      let transport = null;
+      try {
+        // Pull the 4 parts straight from manifest.json (REUSE index.html's offsets/paths).
+        const build = (state.manifest.builds || [])[0];
+        if (!build || !build.parts) throw new Error("manifest has no builds[0].parts");
+        const manifestBase = new URL(MANIFEST_URL, location.href);
+
+        // Fetch each .bin and convert to the Latin1 "binary string" esptool-js expects
+        // (writeFlash reads each fileArray[i].data as a string and maps charCodeAt -> byte).
+        const fileArray = [];
+        const cumBefore = [];     // bytes written before each file (for the overall bar)
+        let grandTotal = 0;
+        for (const part of build.parts) {
+          const url = new URL(part.path, manifestBase);
+          log(`Fetching ${part.path} @ 0x${part.offset.toString(16)}…`);
+          const data = await fetchBinaryString(url);
+          cumBefore.push(grandTotal);
+          grandTotal += data.length;
+          fileArray.push({ data, address: part.offset });
+        }
+        log(`Total ${grandTotal.toLocaleString()} bytes across ${fileArray.length} parts.`);
+
+        // Connect to the ROM bootloader and detect the chip (default_reset = auto-enter loader).
+        transport = new Transport(state.port, false);
+        const loader = new ESPLoader({ transport, baudrate: BAUD, terminal: espTerminal });
+        const chip = await loader.main();
+        log("Connected: " + chip);
+
+        // Flash. flashSize "keep" avoids resizing; eraseAll only if the user ticked full-erase
+        // (writing already erases the target sectors, so a normal update preserves NVS settings).
+        await loader.writeFlash({
+          fileArray,
+          flashSize: "keep",
+          eraseAll: $("fullErase").checked,
+          compress: true,
+          // esptool-js calls this per-part: (fileIndex, bytesWritten, fileTotal).
+          reportProgress: (fileIndex, written, total) => {
+            const overall = cumBefore[fileIndex] + written;
+            setProgress(overall / grandTotal);
+            if (written === 0) log(`Writing ${build.parts[fileIndex].path}…`);
+          },
+          // calculateMD5Hash is optional (post-flash verify). Omitted to avoid bundling an
+          // MD5 implementation; esptool-js still verifies the compressed transfer end-to-end.
+        });
+
+        setProgress(1);
+        log("Flash complete. Hard-resetting the board…");
+        await loader.after("hard_reset");   // pulse RTS to reboot into the new firmware
+        showDone();
+      } catch (e) {
+        log("FLASH FAILED: " + (e.message || e));
+        alert("Flashing failed:\n" + (e.message || e) + "\n\nUnplug/replug the board and try again.");
+        $("btnFlash").disabled = false;
+      } finally {
+        try { if (transport) await transport.disconnect(); } catch (_) {}
+        state.busy = false;
+        $("btnRedetect").disabled = false;
+      }
+    }
+
+    /* Fetch a URL and return its bytes as a Latin1 string (chunked so large files
+       like the ~2MB firmware.bin don't blow String.fromCharCode's argument limit). */
+    async function fetchBinaryString(url) {
+      const resp = await fetch(url, { cache: "no-store" });
+      if (!resp.ok) throw new Error(`fetch ${url} -> HTTP ${resp.status}`);
+      const u8 = new Uint8Array(await resp.arrayBuffer());
+      let s = "";
+      const CHUNK = 0x8000;
+      for (let i = 0; i < u8.length; i += CHUNK) {
+        s += String.fromCharCode.apply(null, u8.subarray(i, Math.min(i + CHUNK, u8.length)));
+      }
+      return s;
+    }
+
+    function setProgress(frac) {
+      const pct = Math.max(0, Math.min(100, Math.round(frac * 100)));
+      $("progressBar").style.width = pct + "%";
+      $("progressPct").textContent = pct + "%";
+    }
+
+    function showDone() {
+      hide("cardFlash");
+      show("cardDone");
+      const picked = BUNDLES.filter(b => state.bundles.has(b.id));
+      $("doneBundles").innerHTML = picked.length
+        ? `<p class="hint" style="margin-top:12px">In <b>SD Setup</b>, grab the bundles you chose:</p>
+           <ul class="tight">${picked.map(b => `<li><b>${esc(b.name)}</b> — ${esc(b.desc)}</li>`).join("")}</ul>`
+        : `<p class="hint" style="margin-top:12px;color:var(--warn)">No SD bundles were selected (or no card is present).</p>`;
+      $("cardDone").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    /* =====================================================================
+       small formatters
+       ===================================================================== */
+    function fmtMB(mb) {
+      if (mb == null) return "unknown size";
+      if (mb >= 1024) return (mb / 1024).toFixed(1) + " GB";
+      return mb + " MB";
+    }
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flash Andraste</title>
+  <style>
+    :root { --bg:#06120c; --fg:#cfe6d6; --gold:#d8a54a; --line:#123; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,sans-serif;
+           line-height:1.6; padding:40px 16px; }
+    .wrap { max-width:640px; margin:0 auto; }
+    h1 { color:var(--gold); letter-spacing:4px; margin:0 0 4px; }
+    .sub { color:#6f8a78; margin-top:0; }
+    .card { border:1px solid var(--line); border-radius:10px; padding:22px; margin:22px 0;
+            background:#0a1a11; }
+    esp-web-install-button { --esp-tools-button-color:var(--gold);
+            --esp-tools-button-text-color:#06120c; }
+    ol { padding-left:20px; } li { margin:8px 0; }
+    code { background:#0d2016; padding:2px 6px; border-radius:4px; color:var(--gold); }
+    .warn { color:#e0b84a; font-size:14px; }
+    a { color:var(--gold); }
+    .foot { color:#5f7a68; font-size:13px; margin-top:30px; text-align:center; }
+    .ver { color:#6f8a78; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>ANDRASTE</h1>
+    <p class="sub">Flash the CYD cyber-tool over USB, straight from this page.</p>
+
+    <div class="card" style="text-align:center">
+      <p>Plug the board in with a USB-data cable, then:</p>
+      <esp-web-install-button manifest="./manifest.json">
+        <button slot="activate" style="font-size:17px;padding:14px 30px;border:0;border-radius:8px;
+                background:var(--gold);color:#06120c;cursor:pointer;font-weight:600">
+          Install / Update Andraste
+        </button>
+        <span slot="unsupported">Your browser can't flash over USB. Use desktop
+          <b>Chrome</b> or <b>Edge</b> (not Safari/Firefox, not iOS/Android).</span>
+        <span slot="not-allowed">Serial access was blocked — allow it and try again.</span>
+      </esp-web-install-button>
+      <p class="ver" id="ver">firmware version —</p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">How it works</h3>
+      <ol>
+        <li>Use <b>desktop Chrome or Edge</b> (they support Web Serial; Safari, Firefox and phones don't).</li>
+        <li>Connect the CYD with a cable that carries <b>data</b> (not charge-only).</li>
+        <li>Click <b>Install / Update</b>, pick the board's serial port (CP210x / CH340), and confirm.</li>
+        <li>It flashes and reboots into the new build — nothing installs on your computer.</li>
+      </ol>
+      <p class="warn">This does not delete your SD-card contents. If the port doesn't appear,
+        install the USB-serial driver (CP210x or CH340) and reconnect.</p>
+    </div>
+
+    <p class="foot">Andraste &mdash; Iceni-themed ESP32 security tool. Flashed with
+      <a href="https://esphome.github.io/esp-web-tools/" target="_blank" rel="noopener">ESP Web Tools</a>.</p>
+  </div>
+
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js"></script>
+  <script>
+    // Show the version from the manifest (nice-to-have; ignores failure).
+    fetch('./manifest.json').then(r => r.json()).then(m => {
+      document.getElementById('ver').textContent = 'firmware version ' + (m.version || '—');
+    }).catch(() => {});
+  </script>
+</body>
+</html>
