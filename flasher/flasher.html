@@ -217,16 +217,16 @@
        checklist only records the user's intent and reminds them at the end.
        `on` = checked by default (wordlists are large, so default them off). */
     const BUNDLES = [
-      { id:"coventina", name:"Coventina blocklist",            on:true,
-        desc:"ad/tracker blocklist so the on-device Pi-hole actually blocks ads." },
-      { id:"portal",    name:"Portal pages",                   on:true,
-        desc:"the captive-portal / evil-portal templates for awareness testing." },
-      { id:"websmith",  name:"WebSmith cracker (chef.html)",   on:true,
-        desc:"the in-browser WPA password-cracker page." },
-      { id:"wordlists", name:"Password wordlists",             on:false,
-        desc:"wordlists for on-device/WebSmith password cracking (large)." },
-      { id:"media",     name:"Media & art",                    on:true,
-        desc:"screensaver art, SAW-portal media, brand logos." },
+      { id:"coventina", name:"Coventina blocklist",          on:true,
+        desc:"A list of ad & tracker domains (~3 KB). The device's built-in Pi-hole (Coventina) reads it and blocks those domains for any phone/laptop on its hotspot. Without it, Coventina runs but blocks nothing." },
+      { id:"portal",    name:"Captive-portal pages",         on:true,
+        desc:"The look-alike WiFi sign-in templates the Evil Portal / Captive Portal tools serve for authorised phishing-awareness testing. Without them those tools have no pages to show." },
+      { id:"websmith",  name:"WebSmith cracker (chef.html)", on:true,
+        desc:"The in-browser WPA cracker page (~40 KB). Join a phone to the device's hotspot and crack a captured handshake on the phone's own CPU. Without it, WebSmith comes up blank." },
+      { id:"wordlists", name:"Password wordlists",           on:false,
+        desc:"Large password lists, millions of entries (~180 MB). A big download - only worth it on a dedicated cracking device. Everything else works fine without them." },
+      { id:"media",     name:"Media & art",                  on:true,
+        desc:"Screensaver artwork, the SAW-portal images/audio, and brand WiFi logos (~1 MB). Cosmetic - the device runs fine without it, it just looks plainer." },
     ];
 
     /* =====================================================================
