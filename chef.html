@@ -87,14 +87,15 @@ select{width:100%;background:var(--card);color:var(--txt);border:1px solid var(-
 
   <div class="lbl" style="margin-top:8px">Wordlist source</div>
   <select id="wlSrc" onchange="wlChange()">
-    <option value="sd_berserker">SD: berserker 2M (password-lists)</option>
+    <option value="sd_berserker_01">SD: berserker 11M part 1 of 2 (password-lists)</option>
+    <option value="sd_berserker_02">SD: berserker 11M part 2 of 2 (password-lists)</option>
     <option value="sd">SD: /andraste/loot/rockyou.txt</option>
     <option value="sdpath">SD: enter path manually</option>
     <option value="upload">Upload from phone</option>
     <option value="brute">Brute force (mask &mdash; small keyspaces only)</option>
   </select>
   <div id="wlPathDiv" style="display:none;margin-top:4px">
-    <input id="wlPath" type="text" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-family:monospace;font-size:12px;outline:none" placeholder="/andraste/password-lists/berserker-2million-passwords.txt">
+    <input id="wlPath" type="text" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);padding:6px;font-family:monospace;font-size:12px;outline:none" placeholder="/andraste/password-lists/berserker-11million-passwords-01.txt">
   </div>
   <div id="wlFileDiv" style="display:none;margin-top:4px">
     <input id="wlFile" type="file" accept=".txt" style="color:var(--dim);font-size:12px">
@@ -404,8 +405,10 @@ async function startCrack(){
   var wlUrl=null, wlData=null, brute=null;
   if(isDemo){
     wlData=demoWords();  // fresh shuffle + random target position each run
-  } else if(wlSrc==='sd_berserker'){
-    wlUrl=location.origin+'/dl?f='+encodeURIComponent('/andraste/password-lists/berserker-2million-passwords.txt');
+  } else if(wlSrc==='sd_berserker_01'){
+    wlUrl=location.origin+'/dl?f='+encodeURIComponent('/andraste/password-lists/berserker-11million-passwords-01.txt');
+  } else if(wlSrc==='sd_berserker_02'){
+    wlUrl=location.origin+'/dl?f='+encodeURIComponent('/andraste/password-lists/berserker-11million-passwords-02.txt');
   } else if(wlSrc==='sd'){
     wlUrl=location.origin+'/dl?f='+encodeURIComponent('/andraste/loot/rockyou.txt');
   } else if(wlSrc==='sdpath'){
