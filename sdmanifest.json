@@ -1,11 +1,13 @@
 {
-  "version": "2026-10-14.a498bf3",
+  "version": "2026-10-15.365624b",
   "base": "https://raw.githubusercontent.com/stevenjtobin/andraste-ota/main/",
   "files": [
     { "sd": "/andraste/media/cheese.gif", "src": "cheese.gif", "size": 37550, "sha": "8084524ccce2c490" },
     { "sd": "/andraste/portal/chef.html", "src": "chef.html", "size": 41653, "sha": "8839ea1a0f128149" },
     { "sd": "/andraste/coventina/blocklist.txt", "src": "coventina/blocklist.txt", "size": 2828, "sha": "5f15d415544a312e" },
     { "sd": "/andraste/portal/delivery.html", "src": "delivery.html", "size": 6570, "sha": "30bb8c2e3de14ad6" },
+    { "sd": "/andraste/portal/flasher/flasher.html", "src": "flasher/flasher.html", "size": 35124, "sha": "e9f930501bbbb8f8" },
+    { "sd": "/andraste/portal/flasher/index.html", "src": "flasher/index.html", "size": 3366, "sha": "416ad0a1a03b2406" },
     { "sd": "/andraste/portal/hb.html", "src": "hb.html", "size": 3294, "sha": "9bf85fde55d875c6" },
     { "sd": "/andraste/media/jigsaw.gif", "src": "jigsaw.gif", "size": 360888, "sha": "4e5d916a6193ef34" },
     { "sd": "/andraste/media/jigsaw_actor.png", "src": "jigsaw_actor.png", "size": 98414, "sha": "90e7424a0d4cb71b" },
@@ -50,6 +52,7 @@
     { "sd": "/andraste/media/saw.mp3", "src": "saw.mp3", "size": 531027, "sha": "d1e3fd79c4e27c16" },
     { "sd": "/andraste/portal/saw_captured.html", "src": "saw_captured.html", "size": 3856, "sha": "6c0bd615af01d292" },
     { "sd": "/andraste/portal/saw_choice.html", "src": "saw_choice.html", "size": 7596, "sha": "900d62e6aabf6397" },
-    { "sd": "/andraste/portal/saw_survived.html", "src": "saw_survived.html", "size": 3832, "sha": "2fa0329e7fdc8d9b" }
+    { "sd": "/andraste/portal/saw_survived.html", "src": "saw_survived.html", "size": 3832, "sha": "2fa0329e7fdc8d9b" },
+    { "sd": "/andraste/snake-pit/blocklist.txt", "src": "snake-pit/blocklist.txt", "size": 10604, "sha": "1bc670657ed0c376" }
   ]
 }
