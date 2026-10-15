@@ -414,46 +414,73 @@ ads.channel4.com
 a.c4assets.com
 
 # ===========================================================================
-# SECTION 9: SOFT PAYWALL / METERED ACCESS BYPASS
-# WARNING — READ BEFORE ENABLING:
-# These block the third-party platforms that COUNT article views (metered
-# paywalls). Blocking them means the site can't increment your "free article"
-# counter, so you may see content you'd otherwise be gated from.
-#
-# !! DO NOT USE IF YOU HAVE A SUBSCRIPTION TO THE SITE !!
-# Piano / Zephr also handle LOGIN and ENTITLEMENT checks. If you pay for
-# EDP24, Guardian, etc. and block these, the site won't recognise your
-# subscription and will lock you OUT of paid content.
-#
-# These are commented out by default. Uncomment individual lines if you want
-# to bypass metering on a site you do NOT have a subscription for.
+# SECTION 9: PAYWALL BYPASS (metered / soft paywalls)
+# Blocks the third-party platforms that count your "free articles" or gate
+# content. Most regional and national UK papers use one of these.
 # ===========================================================================
 
-# Piano (formerly TinyPass) — used by EDP24/Newsquest, The Times, Telegraph,
-# many regional UK papers, and hundreds of news sites globally:
-# api.piano.io
-# cdn.piano.io
-# experience.piano.io
-# sandbox.tinypass.com
-# tinypass.com
-# buy.tinypass.com
-# c2.tinypass.com
-# checkout.piano.io
+# Piano (formerly TinyPass) — EDP24, Norwich EN, EADT, The Times, Telegraph,
+# hundreds of UK regional papers via Newsquest/Archant/Reach:
+api.piano.io
+cdn.piano.io
+experience.piano.io
+id.piano.io
+accounts.piano.io
+tinypass.com
+buy.tinypass.com
+c2.tinypass.com
+checkout.piano.io
+sandbox.tinypass.com
 
-# Zephr — used by some UK regional publishers:
-# cdn.zephr.com
-# api.zephr.com
-# sdk.zephr.com
+# Zephr — Bauer Media, Dennis Publishing, some UK regionals:
+cdn.zephr.com
+api.zephr.com
+sdk.zephr.com
+zephr.com
 
-# Chorus (Vox Media / The Verge) — not UK-specific but common:
-# cdn.concert.io
-# c.chorus.fm
+# SAP Gigya / SAP CDC — login + entitlement layer used by The Telegraph,
+# Sky, many large UK publishers:
+gigya.com
+cdns.gigya.com
+accounts.gigya.com
+socialize.gigya.com
+auth.gigya.com
 
-# Leaky Paywall (smaller news sites):
-# zeen101.com
+# LaterPay — micropayment wall used by some UK and German news sites:
+laterpay.net
+lpapi.laterpay.net
+web.laterpay.net
+iframe.laterpay.net
 
-# Arc XP / Fusion (Washington Post tech, some UK use):
-# arc-fusion.com
+# Leaky Paywall — WordPress paywall plugin, many smaller UK/US papers:
+zeen101.com
+
+# Pelcro — subscription platform used by smaller publishers:
+api.pelcro.com
+js.pelcro.com
+
+# Plenigo — German paywall, some UK/EU use:
+api.plenigo.com
+static.plenigo.com
+
+# Poool — French paywall platform, some UK use:
+oauth.poool.fr
+api.poool.fr
+
+# Chorus / Concert (Vox Media — The Verge, Polygon, etc.):
+cdn.concert.io
+c.chorus.fm
+concert.io
+
+# Arc XP / Washington Post paywall tech (Guardian, some US papers):
+arc-fusion.com
+thecms.io
+
+# Permutive — audience/consent platform that also gates content on
+# Guardian, Telegraph and others:
+permutive.io
+permutive.app
+live.permutive.com
 
 # ===========================================================================
 # SECTION 10: YOUR OWN ADDITIONS
