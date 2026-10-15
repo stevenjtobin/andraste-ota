@@ -1,0 +1,462 @@
+# Snake-pit DNS Sinkhole blocklist
+# Syncs to SD at /andraste/snake-pit/blocklist.txt (via SD Setup / sdmanifest.json).
+# One domain per line. Lines starting with # are comments.
+# Blocking a domain also covers all subdomains (ads.youtube.com is covered by youtube.com).
+# Subdomains listed individually here are for ad/tracker CDNs that differ from the parent brand.
+# -----------------------------------------------------------------------
+
+# ===========================================================================
+# SECTION 1: AD NETWORKS & EXCHANGES
+# ===========================================================================
+
+doubleclick.net
+googlesyndication.com
+googleadservices.com
+googletagservices.com
+googletagmanager.com
+google-analytics.com
+analytics.google.com
+adservice.google.com
+pagead2.googlesyndication.com
+partner.googleadservices.com
+pubads.g.doubleclick.net
+securepubads.g.doubleclick.net
+ad.doubleclick.net
+stats.g.doubleclick.net
+adsense.google.com
+admob.com
+app-measurement.com
+crashlytics.com
+firebase-settings.crashlytics.com
+
+# Meta / Facebook ad infrastructure
+connect.facebook.net
+pixel.facebook.com
+an.facebook.com
+graph.facebook.com
+ads.facebook.com
+business.facebook.com
+analytics.facebook.com
+
+# Amazon ads
+amazon-adsystem.com
+aax.amazon-adsystem.com
+c.amazon-adsystem.com
+mads.amazon-adsystem.com
+fls-na.amazon.com
+
+# Programmatic exchanges
+adnxs.com
+appnexus.com
+pubmatic.com
+rubiconproject.com
+criteo.com
+criteo.net
+casalemedia.com
+openx.net
+smartadserver.com
+adform.net
+taboola.com
+outbrain.com
+taboolasyndication.com
+media.net
+contextweb.com
+3lift.com
+sharethrough.com
+indexww.com
+bidswitch.net
+adroll.com
+districtm.io
+gumgum.com
+yieldmo.com
+teads.tv
+spotxchange.com
+spotx.tv
+adcolony.com
+mopub.com
+inmobi.com
+smaato.net
+applovin.com
+vungle.com
+chartboost.com
+unityads.unity3d.com
+adtng.com
+moatads.com
+scorecardresearch.com
+zedo.com
+revcontent.com
+mgid.com
+propellerads.com
+popads.net
+onclickads.net
+exoclick.com
+juicyads.com
+trafficjunky.net
+
+# ===========================================================================
+# SECTION 2: ANALYTICS & TELEMETRY
+# ===========================================================================
+
+quantserve.com
+quantcount.com
+hotjar.com
+mixpanel.com
+segment.com
+segment.io
+amplitude.com
+heapanalytics.com
+chartbeat.com
+chartbeat.net
+newrelic.com
+nr-data.net
+optimizely.com
+crazyegg.com
+mouseflow.com
+fullstory.com
+clarity.ms
+matomo.cloud
+statcounter.com
+yandex.ru
+mc.yandex.ru
+hs-analytics.net
+hubspot.com
+branch.io
+app.adjust.com
+adjust.com
+kochava.com
+appsflyer.com
+bugsnag.com
+sentry.io
+mparticle.com
+
+# Microsoft / Windows telemetry
+vortex.data.microsoft.com
+telemetry.microsoft.com
+watson.telemetry.microsoft.com
+settings-win.data.microsoft.com
+browser.events.data.microsoft.com
+telemetry.urs.microsoft.com
+
+# Apple / Samsung device telemetry
+iadsdk.apple.com
+metrics.apple.com
+ads.samsungads.com
+samsungacr.com
+smetrics.samsung.com
+
+# Smart-TV / Roku / ACR
+logs.roku.com
+scribe.logs.roku.com
+cooper.logs.roku.com
+samba.tv
+tvinteractive.tv
+adrise.tv
+
+# ===========================================================================
+# SECTION 3: SOCIAL MEDIA PLATFORMS
+# (Blocks ALL access to the platform — use if you want full social blackout)
+# ===========================================================================
+
+# Facebook / Meta
+facebook.com
+messenger.com
+instagram.com
+threads.net
+meta.com
+fbcdn.net
+cdninstagram.com
+whatsapp.com
+whatsapp.net
+
+# YouTube (blocks video + homepage; does NOT break Google Search)
+youtube.com
+youtu.be
+yt.be
+ytimg.com
+googlevideo.com
+ggpht.com
+youtube-nocookie.com
+youtubei.googleapis.com
+
+# TikTok
+tiktok.com
+tiktokcdn.com
+tiktokv.com
+bytedance.com
+musical.ly
+
+# Twitter / X
+twitter.com
+x.com
+t.co
+twimg.com
+t-edge.com
+
+# Snapchat
+snapchat.com
+sc-jpl.com
+snap.com
+
+# Pinterest
+pinterest.com
+pinimg.com
+
+# Reddit
+reddit.com
+redd.it
+redditmedia.com
+redditstatic.com
+reddituploads.com
+reddit.net
+
+# LinkedIn
+linkedin.com
+licdn.com
+
+# Tumblr
+tumblr.com
+
+# Discord
+discord.com
+discordapp.com
+discord.gg
+
+# Twitch
+twitch.tv
+twitchsvc.net
+jtvnw.net
+
+# ===========================================================================
+# SECTION 4: UK NEWS SITE AD INFRASTRUCTURE
+# (Ad-CDN / tracker subdomains only — these block ADS, NOT the sites)
+# NOTE: Google Ad Manager (doubleclick.net etc in Section 1) already kills
+# most programmatic ads on ALL of these sites. Entries here are publisher-
+# specific first-party trackers and ad-stack CDNs on top of that.
+# ===========================================================================
+
+# BBC — consent + audience measurement (bbc.co.uk itself is NOT listed)
+cookielaw.org
+bbc.co.uk.akadns.net
+
+# Guardian — first-party analytics CDN (theguardian.com itself NOT listed)
+ophan.co.uk
+permutive.io
+permutive.app
+
+# Mail Online — ad/tracking CDN (dailymail.co.uk itself NOT listed)
+mol.im
+dmgt.net
+
+# Reach PLC (Mirror / Express / Star / many regionals) — ad/data platform
+# (The sites themselves are NOT listed — just their tracking stack)
+metrics.reachplc.com
+data.reachplc.com
+ads.reachplc.com
+cdn.reachplc.com
+
+# News UK (Times / Sun) — ad infrastructure (sites NOT listed)
+ads.newsukadvertising.co.uk
+data.newsukadvertising.co.uk
+tracking.news.co.uk
+
+# Newsquest (EDP24, Norwich Evening News, EADT + 200 UK regionals)
+# EDP24's ads run through Google (already blocked) + Newsquest ad stack:
+ads.nxtdigital.co.uk
+cdn.nxtdigital.co.uk
+data.nxtdigital.co.uk
+ads.newsquest.co.uk
+tracking.newsquest.co.uk
+
+# Sky Media — ad serving (sky.com and skynews.com themselves NOT listed)
+ads.sky.com
+adsapi.sky.com
+skymedia.co.uk
+adclient.sky.com
+
+# ITV / ITVX — ad servers (itv.com itself NOT listed)
+advertising.itvx.com
+ads.itvx.com
+itvads.com
+
+# Channel 4 — ad servers (channel4.com itself NOT listed)
+ads.channel4.com
+a.c4assets.com
+c4ads.com
+
+# ===========================================================================
+# SECTION 5: UK AD NETWORKS & MEASUREMENT
+# ===========================================================================
+
+smartclip.net
+smartclip.com
+iponweb.net
+dotmetrics.net
+effectivemeasure.com
+comscore.com
+comscoreresearch.com
+xaxis.com
+groupm.com
+mindshare.com
+tribalfusion.com
+intelliad.com
+adtech.de
+adtech.com
+vibrantmedia.com
+vibrantmedia.co.uk
+intellitxt.com
+kontera.com
+yocountdown.com
+livejournalmedia.co.uk
+
+# ===========================================================================
+# SECTION 6: STREAMING SERVICE ADS (UK-relevant)
+# ===========================================================================
+
+# Spotify ads
+ads-fa.spotify.com
+adeventtracker.spotify.com
+
+# DoubleVerify (ad fraud / viewability — used by most UK publishers)
+adclick.g.doubleverify.com
+cdn.doubleverify.com
+cdn2.doubleverify.com
+pub.doubleverify.com
+prebid.doubleverify.com
+
+# ===========================================================================
+# SECTION 7: OPTIONAL — FULL SITE BLOCK (uncomment to kill the entire domain)
+# WARNING: These block the WHOLE SITE, not just ads.
+# Useful for kids' devices, work focus mode, or network lockdown.
+# ===========================================================================
+
+# --- Social media (full blackout) already active in Section 3 above ---
+
+# --- UK newspapers (full block — comment out any you want to keep reading) ---
+# bbc.co.uk
+# bbc.com
+# theguardian.com
+# dailymail.co.uk
+# thesun.co.uk
+# thetimes.co.uk
+# telegraph.co.uk
+# mirror.co.uk
+# express.co.uk
+# dailystar.co.uk
+# independent.co.uk
+# inews.co.uk
+# standard.co.uk
+# metro.co.uk
+# scotsman.com
+# heraldscotland.com
+# belfasttelegraph.co.uk
+# walesonline.co.uk
+
+# --- Norfolk / East Anglia papers (full block) ---
+# edp24.co.uk
+# eveningnews24.co.uk
+# eadt.co.uk
+# ipswichstar.co.uk
+# cambridge-news.co.uk
+# essexlive.news
+# suffolkfreepress.co.uk
+
+# --- UK broadcasters (full block) ---
+# sky.com
+# skynews.com
+# itv.com
+# channel4.com
+
+# ===========================================================================
+# SECTION 7: UK-SPECIFIC AD NETWORKS & TRACKERS
+# ===========================================================================
+
+smartclip.net
+smartclip.com
+sas.com
+sasnews.co.uk
+iponweb.net
+dotmetrics.net
+effectivemeasure.com
+comscore.com
+comscoreresearch.com
+xaxis.com
+groupm.com
+mindshare.com
+wavemaker.com
+zenithoptimedia.com
+livejournalmedia.co.uk
+tribalfusion.com
+intelliad.com
+adtech.de
+adtech.com
+yocountdown.com
+vibrantmedia.com
+vibrantmedia.co.uk
+intellitxt.com
+kontera.com
+
+# ===========================================================================
+# SECTION 8: STREAMING SERVICE ADS (UK-relevant)
+# ===========================================================================
+
+# Spotify ads
+adclick.g.doubleverify.com
+spclient.wg.spotify.com
+ads-fa.spotify.com
+adeventtracker.spotify.com
+
+# ITV / ITVX ad servers
+advertising.itvx.com
+ads.itvx.com
+
+# Channel 4 ad servers
+ads.channel4.com
+a.c4assets.com
+
+# ===========================================================================
+# SECTION 9: SOFT PAYWALL / METERED ACCESS BYPASS
+# WARNING — READ BEFORE ENABLING:
+# These block the third-party platforms that COUNT article views (metered
+# paywalls). Blocking them means the site can't increment your "free article"
+# counter, so you may see content you'd otherwise be gated from.
+#
+# !! DO NOT USE IF YOU HAVE A SUBSCRIPTION TO THE SITE !!
+# Piano / Zephr also handle LOGIN and ENTITLEMENT checks. If you pay for
+# EDP24, Guardian, etc. and block these, the site won't recognise your
+# subscription and will lock you OUT of paid content.
+#
+# These are commented out by default. Uncomment individual lines if you want
+# to bypass metering on a site you do NOT have a subscription for.
+# ===========================================================================
+
+# Piano (formerly TinyPass) — used by EDP24/Newsquest, The Times, Telegraph,
+# many regional UK papers, and hundreds of news sites globally:
+# api.piano.io
+# cdn.piano.io
+# experience.piano.io
+# sandbox.tinypass.com
+# tinypass.com
+# buy.tinypass.com
+# c2.tinypass.com
+# checkout.piano.io
+
+# Zephr — used by some UK regional publishers:
+# cdn.zephr.com
+# api.zephr.com
+# sdk.zephr.com
+
+# Chorus (Vox Media / The Verge) — not UK-specific but common:
+# cdn.concert.io
+# c.chorus.fm
+
+# Leaky Paywall (smaller news sites):
+# zeen101.com
+
+# Arc XP / Fusion (Washington Post tech, some UK use):
+# arc-fusion.com
+
+# ===========================================================================
+# SECTION 10: YOUR OWN ADDITIONS
+# ===========================================================================
+# Add one domain per line below. Restart Snake-pit after editing.
+
