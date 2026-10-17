@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-15.520f2c0",
+  "version": "2026-10-17.63f2531",
   "base": "https://raw.githubusercontent.com/stevenjtobin/andraste-ota/main/",
   "files": [
     { "sd": "/andraste/media/cheese.gif", "src": "cheese.gif", "size": 37550, "sha": "8084524ccce2c490" },
@@ -53,6 +53,6 @@
     { "sd": "/andraste/portal/saw_captured.html", "src": "saw_captured.html", "size": 3856, "sha": "6c0bd615af01d292" },
     { "sd": "/andraste/portal/saw_choice.html", "src": "saw_choice.html", "size": 7596, "sha": "900d62e6aabf6397" },
     { "sd": "/andraste/portal/saw_survived.html", "src": "saw_survived.html", "size": 3832, "sha": "2fa0329e7fdc8d9b" },
-    { "sd": "/andraste/snake-pit/blocklist.txt", "src": "snake-pit/blocklist.txt", "size": 10913, "sha": "80efddae3e8e9eb5" }
+    { "sd": "/andraste/snake-pit/blocklist.txt", "src": "snake-pit/blocklist.txt", "size": 407980, "sha": "45a5751bfbc1b5b3" }
   ]
 }
